@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Sidebar from "./contabilitate/components/Sidebar";
 import Dashboard from "./contabilitate/pages/dashboard/Dashboard";
+import DocumenteDeIesire from "./contabilitate/pages/documenteDeIesire/DocumenteDeIesire";
+import DocumenteDeIntrare from "./contabilitate/pages/documenteDeIntrare/DocumenteDeIntrare";
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState("Dashboard");
@@ -9,6 +11,10 @@ const App = () => {
     switch (currentPage) {
       case "Dashboard":
         return <Dashboard />;
+      case "Documente de ieșire":
+        return <DocumenteDeIesire />;
+      case "Documente de intrare":
+        return <DocumenteDeIntrare />;
       default:
         return (
           <div className="p-6">

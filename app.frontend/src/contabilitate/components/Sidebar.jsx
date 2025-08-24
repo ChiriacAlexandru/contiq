@@ -23,11 +23,10 @@ import {
   Search,
 } from "lucide-react";
 
-const Sidebar = () => {
+const Sidebar = ({ currentPage, onPageChange }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState(["Contracte"]);
-  const [activeItem, setActiveItem] = useState("Dashboard");
 
   const menuItems = [
     { icon: Home, label: "Dashboard", href: "#" },
@@ -61,7 +60,7 @@ const Sidebar = () => {
   };
 
   const handleItemClick = (label) => {
-    setActiveItem(label);
+    onPageChange(label);
     if (window.innerWidth < 1024) {
       setIsMobileMenuOpen(false);
     }
@@ -160,7 +159,7 @@ const Sidebar = () => {
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
               const isExpanded = expandedMenus.includes(item.label);
-              const isActive = activeItem === item.label;
+              const isActive = currentPage === item.label;
 
               return (
                 <li key={index}>
@@ -231,7 +230,7 @@ const Sidebar = () => {
                     <ul className="mt-1 ml-5 space-y-1">
                       {item.submenu.map((subItem, subIndex) => {
                         const SubIconComponent = subItem.icon;
-                        const isSubActive = activeItem === subItem.label;
+                        const isSubActive = currentPage === subItem.label;
 
                         return (
                           <li key={subIndex}>
@@ -283,7 +282,7 @@ const Sidebar = () => {
                 w-full flex items-center px-3 py-2.5 rounded-xl
                 transition-all duration-200 group
                 ${
-                  activeItem === "Suport"
+                  currentPage === "Suport"
                     ? "bg-gradient-to-r from-blue-50 to-blue-100/50 text-blue-600"
                     : "hover:bg-gray-50 text-gray-700"
                 }
@@ -293,7 +292,7 @@ const Sidebar = () => {
                 className={`
                 p-2 rounded-lg transition-all duration-200
                 ${
-                  activeItem === "Suport"
+                  currentPage === "Suport"
                     ? "bg-blue-500 shadow-lg shadow-blue-500/30"
                     : "bg-gray-100 group-hover:bg-gray-200"
                 }
@@ -303,7 +302,7 @@ const Sidebar = () => {
                   className={`
                   w-5 h-5
                   ${
-                    activeItem === "Suport"
+                    currentPage === "Suport"
                       ? "text-white"
                       : "text-gray-600 group-hover:text-gray-800"
                   }
