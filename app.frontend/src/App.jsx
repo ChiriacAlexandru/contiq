@@ -3,6 +3,7 @@ import Sidebar from "./contabilitate/components/Sidebar";
 import Dashboard from "./contabilitate/pages/dashboard/Dashboard";
 import DocumenteDeIesire from "./contabilitate/pages/documenteDeIesire/DocumenteDeIesire";
 import DocumenteDeIntrare from "./contabilitate/pages/documenteDeIntrare/DocumenteDeIntrare";
+import GestiuneClienti from "./contabilitate/pages/contracte/clienti/GestiuneClienti";
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState("Dashboard");
@@ -15,6 +16,8 @@ const App = () => {
         return <DocumenteDeIesire />;
       case "Documente de intrare":
         return <DocumenteDeIntrare />;
+      case "Clienți":
+        return <GestiuneClienti />;
       default:
         return (
           <div className="p-6">
