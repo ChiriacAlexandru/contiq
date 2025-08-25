@@ -277,10 +277,10 @@ const GestiuneProduse = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="page-title">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
               Gestiune Produse
             </h1>
-            <p className="mt-1 body-small">
+            <p className="mt-1 text-sm text-gray-600">
               Administrează inventarul și cataloagele de produse
             </p>
           </div>
@@ -361,7 +361,7 @@ const GestiuneProduse = () => {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Categorie
                   </label>
                   <select
@@ -378,7 +378,7 @@ const GestiuneProduse = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Preț (RON)
                   </label>
                   <div className="flex gap-2">
@@ -395,7 +395,7 @@ const GestiuneProduse = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Stoc
                   </label>
                   <div className="flex gap-2">
@@ -412,7 +412,7 @@ const GestiuneProduse = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Brand
                   </label>
                   <input
@@ -446,8 +446,8 @@ const GestiuneProduse = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Total Produse</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Total Produse</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {produse.length}
                 </p>
               </div>
@@ -459,8 +459,8 @@ const GestiuneProduse = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Valoare Stoc</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Valoare Stoc</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {produse
                     .reduce((sum, p) => sum + p.pret * p.stoc, 0)
                     .toLocaleString("ro-RO")}{" "}
@@ -475,8 +475,8 @@ const GestiuneProduse = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Stoc Redus</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Stoc Redus</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {
                     produse.filter((p) => p.stoc <= p.stocMinim && p.stoc > 0)
                       .length
@@ -491,8 +491,8 @@ const GestiuneProduse = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Categorii</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Categorii</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {getCategorii().length}
                 </p>
               </div>
@@ -518,7 +518,7 @@ const GestiuneProduse = () => {
                         <Package className="w-6 h-6 text-white" />
                       </div>
                       <div className="ml-3">
-                        <span className="px-2 py-1 status-text bg-gray-100 text-gray-700 rounded-lg">
+                        <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg">
                           {produs.cod}
                         </span>
                       </div>
@@ -531,22 +531,22 @@ const GestiuneProduse = () => {
                     />
                   </div>
 
-                  <h3 className="card-title mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 mb-1">
                     {produs.nume}
                   </h3>
-                  <p className="body-small mb-3">
+                  <p className="text-sm text-gray-600 mb-3">
                     {produs.brand} • {produs.categorie}
                   </p>
 
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Preț:</span>
-                      <span className="card-title">
+                      <span className="text-sm text-gray-600">Preț:</span>
+                      <span className="text-lg font-semibold text-gray-900 mb-3">
                         {produs.pret.toLocaleString("ro-RO")} RON
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Stoc:</span>
+                      <span className="text-sm text-gray-600">Stoc:</span>
                       <span
                         className={`font-medium ${
                           produs.stoc === 0
@@ -560,7 +560,7 @@ const GestiuneProduse = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Profit:</span>
+                      <span className="text-sm text-gray-600">Profit:</span>
                       <span className="font-medium text-green-600">
                         {calculateProfit(
                           produs.pret,
@@ -570,7 +570,7 @@ const GestiuneProduse = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Rating:</span>
+                      <span className="text-sm text-gray-600">Rating:</span>
                       <div className="flex items-center">
                         {getRatingStars(produs.rating)}
                       </div>
@@ -581,14 +581,14 @@ const GestiuneProduse = () => {
                     <div className="flex items-center">
                       {getStatusIcon(produs.status)}
                       <span
-                        className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
+                        className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
                           produs.status
                         )}`}
                       >
                         {produs.status.replace("_", " ")}
                       </span>
                     </div>
-                    <span className="body-xs">
+                    <span className="text-xs text-gray-500">
                       {produs.vanzari} vândute
                     </span>
                   </div>
@@ -636,25 +636,25 @@ const GestiuneProduse = () => {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Produs
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Categorie
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Preț
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Stoc
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Profit
                     </th>
-                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Acțiuni
                     </th>
                   </tr>
@@ -682,14 +682,14 @@ const GestiuneProduse = () => {
                             <div className="text-sm font-medium text-gray-900">
                               {produs.nume}
                             </div>
-                            <div className="body-small text-muted">
+                            <div className="text-sm text-gray-600 text-gray-500">
                               {produs.cod} • {produs.brand}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 status-text bg-gray-100 text-gray-700 rounded-lg">
+                        <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg">
                           {produs.categorie}
                         </span>
                       </td>
@@ -697,7 +697,7 @@ const GestiuneProduse = () => {
                         <div className="text-sm font-medium text-gray-900">
                           {produs.pret.toLocaleString("ro-RO")} RON
                         </div>
-                        <div className="body-small text-muted">
+                        <div className="text-sm text-gray-600 text-gray-500">
                           Cost: {produs.pretAchizitie.toLocaleString("ro-RO")}{" "}
                           RON
                         </div>
@@ -714,7 +714,7 @@ const GestiuneProduse = () => {
                         >
                           {produs.stoc} {produs.unitate}
                         </div>
-                        <div className="body-small text-muted">
+                        <div className="text-sm text-gray-600 text-gray-500">
                           Min: {produs.stocMinim}
                         </div>
                       </td>
@@ -722,7 +722,7 @@ const GestiuneProduse = () => {
                         <div className="flex items-center">
                           {getStatusIcon(produs.status)}
                           <span
-                            className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
+                            className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
                               produs.status
                             )}`}
                           >
@@ -739,7 +739,7 @@ const GestiuneProduse = () => {
                           ).toLocaleString("ro-RO")}{" "}
                           RON
                         </div>
-                        <div className="body-small text-muted">
+                        <div className="text-sm text-gray-600 text-gray-500">
                           {calculateProfitMargin(
                             produs.pret,
                             produs.pretAchizitie
@@ -778,7 +778,7 @@ const GestiuneProduse = () => {
       {/* Bulk Actions */}
       {selectedProduse.length > 0 && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 px-6 py-3 flex items-center space-x-4 z-20">
-          <span className="body-small">
+          <span className="text-sm text-gray-600">
             {selectedProduse.length} selectate
           </span>
           <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
@@ -808,7 +808,7 @@ const GestiuneProduse = () => {
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="section-title">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {selectedProduct ? "Detalii Produs" : "Produs Nou"}
                 </h2>
                 <button
@@ -827,7 +827,7 @@ const GestiuneProduse = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Nume Produs
                     </label>
                     <input
@@ -838,7 +838,7 @@ const GestiuneProduse = () => {
                     />
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Cod Produs
                     </label>
                     <input
@@ -849,7 +849,7 @@ const GestiuneProduse = () => {
                     />
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Categorie
                     </label>
                     <select
@@ -865,7 +865,7 @@ const GestiuneProduse = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Brand
                     </label>
                     <input
@@ -880,7 +880,7 @@ const GestiuneProduse = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block form-label mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                         Preț Vânzare (RON)
                       </label>
                       <input
@@ -892,7 +892,7 @@ const GestiuneProduse = () => {
                       />
                     </div>
                     <div>
-                      <label className="block form-label mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                         Preț Achiziție (RON)
                       </label>
                       <input
@@ -906,7 +906,7 @@ const GestiuneProduse = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block form-label mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                         Stoc Actual
                       </label>
                       <input
@@ -917,7 +917,7 @@ const GestiuneProduse = () => {
                       />
                     </div>
                     <div>
-                      <label className="block form-label mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                         Stoc Minim
                       </label>
                       <input
@@ -929,7 +929,7 @@ const GestiuneProduse = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Unitate Măsură
                     </label>
                     <select
@@ -944,7 +944,7 @@ const GestiuneProduse = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Locație
                     </label>
                     <input
@@ -957,7 +957,7 @@ const GestiuneProduse = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Descriere
                   </label>
                   <textarea

@@ -132,7 +132,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50/50">
       {/* Dashboard Header */}
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
-        <h1 className="responsive-title">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
           Dashboard
         </h1>
       </div>
@@ -149,15 +149,15 @@ const Dashboard = () => {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="stat-label mb-1">{stat.title}</p>
-                    <p className="stat-number">
+                    <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
+                    <p className="text-2xl font-bold text-gray-900">
                       {stat.value}
                     </p>
                     <p
-                      className={`meta-text mt-2 ${
+                      className={`text-xs text-gray-500 mt-2 ${
                         stat.change.startsWith("+")
-                          ? "text-success"
-                          : "text-muted"
+                          ? "text-green-600"
+                          : "text-gray-500"
                       }`}
                     >
                       {stat.change}
@@ -176,7 +176,7 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="section-title">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
             Acțiuni rapide
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -198,7 +198,7 @@ const Dashboard = () => {
                   <h3 className="font-semibold text-gray-900 mb-1">
                     {action.title}
                   </h3>
-                  <p className="body-small">{action.description}</p>
+                  <p className="text-sm text-gray-600">{action.description}</p>
                 </button>
               );
             })}
@@ -213,11 +213,11 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Activity className="w-5 h-5 text-gray-600 mr-2" />
-                  <h2 className="card-title">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3">
                     Activitate recentă
                   </h2>
                 </div>
-                <p className="body-small text-muted">
+                <p className="text-sm text-gray-600 text-gray-500">
                   Ultimele activități din platformă
                 </p>
               </div>
@@ -239,13 +239,13 @@ const Dashboard = () => {
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="body-small font-medium text-gray-900">
+                        <p className="text-sm text-gray-600 font-medium text-gray-900">
                           {activity.title}
                         </p>
-                        <p className="body-small">
+                        <p className="text-sm text-gray-600">
                           {activity.description}
                         </p>
-                        <p className="meta-text mt-1 flex items-center">
+                        <p className="text-xs text-gray-500 mt-1 flex items-center">
                           <Clock className="w-3 h-3 mr-1" />
                           {activity.time}
                         </p>
@@ -261,10 +261,10 @@ const Dashboard = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="card-title">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">
                   Sistemul tău
                 </h2>
-                <p className="body-small text-muted">Status și performanță</p>
+                <p className="text-sm text-gray-600 text-gray-500">Status și performanță</p>
               </div>
             </div>
             <div className="p-6">

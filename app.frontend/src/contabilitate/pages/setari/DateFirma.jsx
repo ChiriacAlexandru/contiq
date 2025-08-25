@@ -134,10 +134,10 @@ const DateFirma = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="responsive-title">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
               Date Firmă
             </h1>
-            <p className="mt-1 body-small">
+            <p className="mt-1 text-sm text-gray-600">
               Gestionează informațiile și setările companiei tale
             </p>
           </div>
@@ -191,7 +191,7 @@ const DateFirma = () => {
             <div key={index} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="body-small">{stat.label}</p>
+                  <p className="text-sm text-gray-600">{stat.label}</p>
                   <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 </div>
                 <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.color} shadow-lg`}>
@@ -253,7 +253,7 @@ const DateFirma = () => {
         {/* General Information Tab */}
         {activeTab === "general" && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="section-title mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 mb-6">
               Informații Generale
             </h2>
             

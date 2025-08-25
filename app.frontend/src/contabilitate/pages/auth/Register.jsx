@@ -168,13 +168,13 @@ const Register = () => {
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="section-title">Date personale</h2>
-              <p className="body-small text-muted">Completează informațiile tale personale</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Date personale</h2>
+              <p className="text-sm text-gray-600 text-gray-500">Completează informațiile tale personale</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Prenume</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Prenume</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="w-5 h-5 text-gray-400" />
@@ -190,11 +190,11 @@ const Register = () => {
                     placeholder="Ion"
                   />
                 </div>
-                {errors.firstName && <p className="form-error">{errors.firstName}</p>}
+                {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>}
               </div>
 
               <div>
-                <label className="form-label">Nume</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Nume</label>
                 <input
                   type="text"
                   name="lastName"
@@ -205,12 +205,12 @@ const Register = () => {
                   }`}
                   placeholder="Popescu"
                 />
-                {errors.lastName && <p className="form-error">{errors.lastName}</p>}
+                {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
               </div>
             </div>
 
             <div>
-              <label className="form-label">Email</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Email</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="w-5 h-5 text-gray-400" />
@@ -226,11 +226,11 @@ const Register = () => {
                   placeholder="ion.popescu@exemplu.com"
                 />
               </div>
-              {errors.email && <p className="form-error">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
             </div>
 
             <div>
-              <label className="form-label">Telefon</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Telefon</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Phone className="w-5 h-5 text-gray-400" />
@@ -246,12 +246,12 @@ const Register = () => {
                   placeholder="+40 123 456 789"
                 />
               </div>
-              {errors.phone && <p className="form-error">{errors.phone}</p>}
+              {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Parola</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Parola</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="w-5 h-5 text-gray-400" />
@@ -278,11 +278,11 @@ const Register = () => {
                     )}
                   </button>
                 </div>
-                {errors.password && <p className="form-error">{errors.password}</p>}
+                {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
               </div>
 
               <div>
-                <label className="form-label">Confirmă parola</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Confirmă parola</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="w-5 h-5 text-gray-400" />
@@ -309,7 +309,7 @@ const Register = () => {
                     )}
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="form-error">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>}
               </div>
             </div>
           </div>
@@ -319,12 +319,12 @@ const Register = () => {
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="section-title">Date companie</h2>
-              <p className="body-small text-muted">Informații despre compania ta</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Date companie</h2>
+              <p className="text-sm text-gray-600 text-gray-500">Informații despre compania ta</p>
             </div>
 
             <div>
-              <label className="form-label">Nume companie</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Nume companie</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Building className="w-5 h-5 text-gray-400" />
@@ -340,12 +340,12 @@ const Register = () => {
                   placeholder="Tech Solutions SRL"
                 />
               </div>
-              {errors.companyName && <p className="form-error">{errors.companyName}</p>}
+              {errors.companyName && <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Tip societate</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Tip societate</label>
                 <select
                   name="companyType"
                   value={formData.companyType}
@@ -361,11 +361,11 @@ const Register = () => {
                   <option value="II">Întreprindere individuală</option>
                   <option value="ONG">ONG</option>
                 </select>
-                {errors.companyType && <p className="form-error">{errors.companyType}</p>}
+                {errors.companyType && <p className="text-xs text-red-600 mt-1">{errors.companyType}</p>}
               </div>
 
               <div>
-                <label className="form-label">CUI</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">CUI</label>
                 <input
                   type="text"
                   name="cui"
@@ -376,12 +376,12 @@ const Register = () => {
                   }`}
                   placeholder="RO12345678"
                 />
-                {errors.cui && <p className="form-error">{errors.cui}</p>}
+                {errors.cui && <p className="text-xs text-red-600 mt-1">{errors.cui}</p>}
               </div>
             </div>
 
             <div>
-              <label className="form-label">Adresa</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Adresa</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <MapPin className="w-5 h-5 text-gray-400" />
@@ -397,12 +397,12 @@ const Register = () => {
                   placeholder="Str. Exemplu Nr. 123"
                 />
               </div>
-              {errors.address && <p className="form-error">{errors.address}</p>}
+              {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Oraș</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Oraș</label>
                 <input
                   type="text"
                   name="city"
@@ -413,11 +413,11 @@ const Register = () => {
                   }`}
                   placeholder="București"
                 />
-                {errors.city && <p className="form-error">{errors.city}</p>}
+                {errors.city && <p className="text-xs text-red-600 mt-1">{errors.city}</p>}
               </div>
 
               <div>
-                <label className="form-label">Județ</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Județ</label>
                 <input
                   type="text"
                   name="county"
@@ -428,7 +428,7 @@ const Register = () => {
                   }`}
                   placeholder="București"
                 />
-                {errors.county && <p className="form-error">{errors.county}</p>}
+                {errors.county && <p className="text-xs text-red-600 mt-1">{errors.county}</p>}
               </div>
             </div>
           </div>
@@ -438,28 +438,28 @@ const Register = () => {
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="section-title">Finalizare cont</h2>
-              <p className="body-small text-muted">Ultimele detalii pentru finalizarea contului</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Finalizare cont</h2>
+              <p className="text-sm text-gray-600 text-gray-500">Ultimele detalii pentru finalizarea contului</p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6">
-              <h3 className="card-title mb-4">Rezumatul datelor</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3 mb-4">Rezumatul datelor</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="body-small text-muted">Nume complet:</span>
-                  <span className="body-small font-medium">{formData.firstName} {formData.lastName}</span>
+                  <span className="text-sm text-gray-600 text-gray-500">Nume complet:</span>
+                  <span className="text-sm text-gray-600 font-medium">{formData.firstName} {formData.lastName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="body-small text-muted">Email:</span>
-                  <span className="body-small font-medium">{formData.email}</span>
+                  <span className="text-sm text-gray-600 text-gray-500">Email:</span>
+                  <span className="text-sm text-gray-600 font-medium">{formData.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="body-small text-muted">Companie:</span>
-                  <span className="body-small font-medium">{formData.companyName}</span>
+                  <span className="text-sm text-gray-600 text-gray-500">Companie:</span>
+                  <span className="text-sm text-gray-600 font-medium">{formData.companyName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="body-small text-muted">Tip:</span>
-                  <span className="body-small font-medium">{formData.companyType}</span>
+                  <span className="text-sm text-gray-600 text-gray-500">Tip:</span>
+                  <span className="text-sm text-gray-600 font-medium">{formData.companyType}</span>
                 </div>
               </div>
             </div>
@@ -474,7 +474,7 @@ const Register = () => {
                   className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 mt-1"
                 />
                 <div className="ml-3">
-                  <label className="body-small">
+                  <label className="text-sm text-gray-600">
                     Sunt de acord cu{' '}
                     <Link to="/terms" className="text-orange-600 hover:text-orange-700">
                       termenii și condițiile
@@ -484,7 +484,7 @@ const Register = () => {
                       politica de confidențialitate
                     </Link>
                   </label>
-                  {errors.agreeToTerms && <p className="form-error">{errors.agreeToTerms}</p>}
+                  {errors.agreeToTerms && <p className="text-xs text-red-600 mt-1">{errors.agreeToTerms}</p>}
                 </div>
               </div>
 
@@ -496,7 +496,7 @@ const Register = () => {
                   onChange={handleChange}
                   className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 mt-1"
                 />
-                <label className="body-small ml-3">
+                <label className="text-sm text-gray-600 ml-3">
                   Doresc să primesc newsletter-ul cu noutăți și oferte speciale
                 </label>
               </div>
@@ -516,10 +516,10 @@ const Register = () => {
         <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-gradient-to-br from-orange-500 to-red-500 text-white p-12">
           <div className="max-w-lg mx-auto">
             <div className="mb-12">
-              <h2 className="responsive-title text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-white mb-4">
                 Alătură-te comunității ContIQ
               </h2>
-              <p className="body-large text-white">
+              <p className="text-lg text-gray-700 leading-relaxed text-white">
                 Peste 10,000+ companii au ales deja ContIQ pentru gestionarea afacerilor. 
                 Fii următorul care îți optimizează procesele!
               </p>
@@ -536,10 +536,10 @@ const Register = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="card-title text-white mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3 text-white mb-2">
                         {benefit.title}
                       </h3>
-                      <p className="body-small text-white">
+                      <p className="text-sm text-gray-600 text-white">
                         {benefit.description}
                       </p>
                     </div>
@@ -562,8 +562,8 @@ const Register = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="body-small font-medium">Înregistrări recent</p>
-                  <p className="meta-text">3 companii în ultima oră</p>
+                  <p className="text-sm text-gray-600 font-medium">Înregistrări recent</p>
+                  <p className="text-xs text-gray-500">3 companii în ultima oră</p>
                 </div>
               </div>
             </div>
@@ -580,10 +580,10 @@ const Register = () => {
                   <TrendingUp className="w-8 h-8 text-white" />
                 </div>
               </div>
-              <h1 className="page-title text-center">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 text-center">
                 Creează un cont ContIQ
               </h1>
-              <p className="body-small text-center mt-2">
+              <p className="text-sm text-gray-600 text-center mt-2">
                 Începe să gestionezi afacerea mai eficient
               </p>
             </div>
@@ -613,9 +613,9 @@ const Register = () => {
                 ))}
               </div>
               <div className="flex justify-between mt-2">
-                <span className="body-xs">Date personale</span>
-                <span className="body-xs">Date companie</span>
-                <span className="body-xs">Finalizare</span>
+                <span className="text-xs text-gray-500">Date personale</span>
+                <span className="text-xs text-gray-500">Date companie</span>
+                <span className="text-xs text-gray-500">Finalizare</span>
               </div>
             </div>
 
@@ -624,7 +624,7 @@ const Register = () => {
               <form onSubmit={currentStep === 3 ? handleSubmit : undefined}>
                 {errors.general && (
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                    <p className="body-small text-red-600">{errors.general}</p>
+                    <p className="text-sm text-gray-600 text-red-600">{errors.general}</p>
                   </div>
                 )}
 
@@ -676,7 +676,7 @@ const Register = () => {
 
               {/* Login Link */}
               <div className="text-center mt-6 pt-6 border-t border-gray-100">
-                <p className="body-small">
+                <p className="text-sm text-gray-600">
                   Ai deja un cont?{' '}
                   <Link
                     to="/login"
@@ -690,7 +690,7 @@ const Register = () => {
 
             {/* Footer */}
             <div className="text-center mt-8">
-              <p className="meta-text">
+              <p className="text-xs text-gray-500">
                 © 2024 ContIQ. Toate drepturile rezervate.
               </p>
             </div>

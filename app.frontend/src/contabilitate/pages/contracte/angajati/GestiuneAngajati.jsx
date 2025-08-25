@@ -241,10 +241,10 @@ const GestiuneAngajati = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="page-title">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
               Gestiune Angajați
             </h1>
-            <p className="mt-1 body-small">
+            <p className="mt-1 text-sm text-gray-600">
               Administrează echipa și datele angajaților
             </p>
           </div>
@@ -324,7 +324,7 @@ const GestiuneAngajati = () => {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Departament
                   </label>
                   <select
@@ -341,7 +341,7 @@ const GestiuneAngajati = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Tip Contract
                   </label>
                   <select
@@ -356,7 +356,7 @@ const GestiuneAngajati = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Salariu (RON)
                   </label>
                   <div className="flex gap-2">
@@ -398,8 +398,8 @@ const GestiuneAngajati = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Total Angajați</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Total Angajați</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {angajati.length}
                 </p>
               </div>
@@ -411,8 +411,8 @@ const GestiuneAngajati = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Angajați Activi</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Angajați Activi</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {angajati.filter((a) => a.status === "activ").length}
                 </p>
               </div>
@@ -424,8 +424,8 @@ const GestiuneAngajati = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Salariu Mediu</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Salariu Mediu</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {Math.round(
                     angajati.reduce((sum, a) => sum + a.salariu, 0) /
                       angajati.length
@@ -441,8 +441,8 @@ const GestiuneAngajati = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Departamente</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Departamente</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {getDepartamente().length}
                 </p>
               </div>
@@ -468,10 +468,10 @@ const GestiuneAngajati = () => {
                       <User className="w-6 h-6 text-white" />
                     </div>
                     <div className="ml-3">
-                      <h3 className="card-title">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
                         {angajat.nume}
                       </h3>
-                      <p className="body-small">{angajat.functie}</p>
+                      <p className="text-sm text-gray-600">{angajat.functie}</p>
                     </div>
                   </div>
                   <input
@@ -483,19 +483,19 @@ const GestiuneAngajati = () => {
                 </div>
 
                 <div className="space-y-3 mb-4">
-                  <div className="flex items-center body-small">
+                  <div className="flex items-center text-sm text-gray-600">
                     <Building className="w-4 h-4 mr-2 text-gray-400" />
                     {angajat.departament}
                   </div>
-                  <div className="flex items-center body-small">
+                  <div className="flex items-center text-sm text-gray-600">
                     <Mail className="w-4 h-4 mr-2 text-gray-400" />
                     {angajat.email}
                   </div>
-                  <div className="flex items-center body-small">
+                  <div className="flex items-center text-sm text-gray-600">
                     <Phone className="w-4 h-4 mr-2 text-gray-400" />
                     {angajat.telefon}
                   </div>
-                  <div className="flex items-center body-small">
+                  <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                     Angajat din{" "}
                     {new Date(angajat.dataAngajare).toLocaleDateString("ro-RO")}
@@ -506,7 +506,7 @@ const GestiuneAngajati = () => {
                   <div className="flex items-center">
                     {getStatusIcon(angajat.status)}
                     <span
-                      className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
+                      className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
                         angajat.status
                       )}`}
                     >
@@ -514,7 +514,7 @@ const GestiuneAngajati = () => {
                     </span>
                   </div>
                   <span
-                    className={`px-2 py-1 status-text rounded-lg ${getContractColor(
+                    className={`px-2 py-1 text-xs font-medium rounded-lg ${getContractColor(
                       angajat.contract
                     )}`}
                   >
@@ -522,27 +522,27 @@ const GestiuneAngajati = () => {
                   </span>
                 </div>
 
-                <div className="space-y-2 body-small mb-4">
+                <div className="space-y-2 text-sm text-gray-600 mb-4">
                   <div className="flex items-center justify-between">
-                    <span className="body-small">Salariu:</span>
-                    <span className="btn-text-normal">
+                    <span className="text-sm text-gray-600">Salariu:</span>
+                    <span className="text-sm font-medium">
                       {angajat.salariu.toLocaleString("ro-RO")} RON
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="body-small">Experiență:</span>
-                    <span className="btn-text-normal">
+                    <span className="text-sm text-gray-600">Experiență:</span>
+                    <span className="text-sm font-medium">
                       {angajat.experienta}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="body-small">Proiecte:</span>
-                    <span className="btn-text-normal">
+                    <span className="text-sm text-gray-600">Proiecte:</span>
+                    <span className="text-sm font-medium">
                       {angajat.proiecte}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="body-small">Rating:</span>
+                    <span className="text-sm text-gray-600">Rating:</span>
                     <div className="flex items-center">
                       {getRatingStars(angajat.rating)}
                     </div>
@@ -590,25 +590,25 @@ const GestiuneAngajati = () => {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Angajat
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Funcție
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Departament
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Salariu
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left body-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs text-gray-500 uppercase tracking-wider">
                     Acțiuni
                   </th>
                 </tr>
@@ -633,27 +633,27 @@ const GestiuneAngajati = () => {
                           <User className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <div className="btn-text-normal">
+                          <div className="text-sm font-medium">
                             {angajat.nume}
                           </div>
-                          <div className="body-small text-muted">
+                          <div className="text-sm text-gray-600 text-gray-500">
                             {angajat.experienta} experiență
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="body-small">{angajat.functie}</div>
-                      <div className="body-small text-muted">
+                      <div className="text-sm text-gray-600">{angajat.functie}</div>
+                      <div className="text-sm text-gray-600 text-gray-500">
                         {getRatingStars(angajat.rating)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="body-small">
+                      <div className="text-sm text-gray-600">
                         {angajat.departament}
                       </div>
                       <span
-                        className={`inline-flex px-2 py-1 status-text rounded-lg ${getContractColor(
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-lg ${getContractColor(
                           angajat.contract
                         )}`}
                       >
@@ -661,14 +661,14 @@ const GestiuneAngajati = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="body-small">{angajat.email}</div>
-                      <div className="body-small text-muted">{angajat.telefon}</div>
+                      <div className="text-sm text-gray-600">{angajat.email}</div>
+                      <div className="text-sm text-gray-600 text-gray-500">{angajat.telefon}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="btn-text-normal">
+                      <div className="text-sm font-medium">
                         {angajat.salariu.toLocaleString("ro-RO")} RON
                       </div>
-                      <div className="body-small text-muted">
+                      <div className="text-sm text-gray-600 text-gray-500">
                         {angajat.proiecte} proiecte
                       </div>
                     </td>
@@ -676,7 +676,7 @@ const GestiuneAngajati = () => {
                       <div className="flex items-center">
                         {getStatusIcon(angajat.status)}
                         <span
-                          className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
+                          className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
                             angajat.status
                           )}`}
                         >
@@ -715,19 +715,19 @@ const GestiuneAngajati = () => {
       {/* Bulk Actions */}
       {selectedAngajati.length > 0 && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 px-6 py-3 flex items-center space-x-4 z-20">
-          <span className="body-small">
+          <span className="text-sm text-gray-600">
             {selectedAngajati.length} selectați
           </span>
-          <button className="px-3 py-1 body-small bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          <button className="px-3 py-1 text-sm text-gray-600 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
             Exportă
           </button>
-          <button className="px-3 py-1 body-small bg-green-500 text-white rounded-lg hover:bg-green-600">
+          <button className="px-3 py-1 text-sm text-gray-600 bg-green-500 text-white rounded-lg hover:bg-green-600">
             Activează
           </button>
-          <button className="px-3 py-1 body-small bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+          <button className="px-3 py-1 text-sm text-gray-600 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
             Concediu
           </button>
-          <button className="px-3 py-1 body-small bg-red-500 text-white rounded-lg hover:bg-red-600">
+          <button className="px-3 py-1 text-sm text-gray-600 bg-red-500 text-white rounded-lg hover:bg-red-600">
             Dezactivează
           </button>
           <button
@@ -745,7 +745,7 @@ const GestiuneAngajati = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="section-title">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {selectedEmployee ? "Detalii Angajat" : "Angajat Nou"}
                 </h2>
                 <button
@@ -763,7 +763,7 @@ const GestiuneAngajati = () => {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Nume Complet
                   </label>
                   <input
@@ -774,7 +774,7 @@ const GestiuneAngajati = () => {
                   />
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Funcție
                   </label>
                   <input
@@ -785,7 +785,7 @@ const GestiuneAngajati = () => {
                   />
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Departament
                   </label>
                   <select
@@ -801,7 +801,7 @@ const GestiuneAngajati = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Email
                   </label>
                   <input
@@ -812,7 +812,7 @@ const GestiuneAngajati = () => {
                   />
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Telefon
                   </label>
                   <input
@@ -823,7 +823,7 @@ const GestiuneAngajati = () => {
                   />
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Salariu (RON)
                   </label>
                   <input
@@ -834,7 +834,7 @@ const GestiuneAngajati = () => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Adresă
                   </label>
                   <input

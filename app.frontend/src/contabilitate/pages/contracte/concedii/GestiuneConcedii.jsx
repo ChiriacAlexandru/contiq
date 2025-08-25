@@ -281,10 +281,10 @@ const GestiuneConcedii = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="page-title">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
               Gestiune Concedii
             </h1>
-            <p className="mt-1 body-small">
+            <p className="mt-1 text-sm text-gray-600">
               Administrează cererile și perioadele de concediu ale angajaților
             </p>
           </div>
@@ -366,7 +366,7 @@ const GestiuneConcedii = () => {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Tip Concediu
                   </label>
                   <select
@@ -383,7 +383,7 @@ const GestiuneConcedii = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Departament
                   </label>
                   <select
@@ -400,7 +400,7 @@ const GestiuneConcedii = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Perioada
                   </label>
                   <div className="flex gap-2">
@@ -415,7 +415,7 @@ const GestiuneConcedii = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block form-label mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                     Nr. Zile
                   </label>
                   <div className="flex gap-2">
@@ -457,8 +457,8 @@ const GestiuneConcedii = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Total Cereri</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Total Cereri</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {concedii.length}
                 </p>
               </div>
@@ -470,8 +470,8 @@ const GestiuneConcedii = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Aprobate</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Aprobate</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {concedii.filter((c) => c.status === "aprobat").length}
                 </p>
               </div>
@@ -483,8 +483,8 @@ const GestiuneConcedii = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">În Așteptare</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">În Așteptare</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {concedii.filter((c) => c.status === "in_asteptare").length}
                 </p>
               </div>
@@ -496,8 +496,8 @@ const GestiuneConcedii = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-small">Zile Total</p>
-                <p className="page-title">
+                <p className="text-sm text-gray-600">Zile Total</p>
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {concedii.reduce((sum, c) => sum + c.numarZile, 0)}
                 </p>
               </div>
@@ -523,10 +523,10 @@ const GestiuneConcedii = () => {
                         <User className="w-6 h-6 text-white" />
                       </div>
                       <div className="ml-3">
-                        <h3 className="card-title">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
                           {concediu.angajat}
                         </h3>
-                        <p className="body-small">{concediu.departament}</p>
+                        <p className="text-sm text-gray-600">{concediu.departament}</p>
                       </div>
                     </div>
                     <input
@@ -546,25 +546,25 @@ const GestiuneConcedii = () => {
 
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Perioada:</span>
+                      <span className="text-sm text-gray-600">Perioada:</span>
                       <span className="text-sm font-medium text-gray-900">
                         {formatDate(concediu.dataInceput)} - {formatDate(concediu.dataSfarsit)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Zile:</span>
-                      <span className="card-title">
+                      <span className="text-sm text-gray-600">Zile:</span>
+                      <span className="text-lg font-semibold text-gray-900 mb-3">
                         {concediu.numarZile}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Înlocuitor:</span>
+                      <span className="text-sm text-gray-600">Înlocuitor:</span>
                       <span className="text-sm font-medium text-gray-900">
                         {concediu.inlocuitor || "Neasignat"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="body-small">Zile rămase:</span>
+                      <span className="text-sm text-gray-600">Zile rămase:</span>
                       <span className={`text-sm font-medium ${
                         concediu.zileConcediuRamase <= 5 ? "text-red-600" : "text-green-600"
                       }`}>
@@ -574,7 +574,7 @@ const GestiuneConcedii = () => {
                   </div>
 
                   <div className="mb-3">
-                    <p className="body-small line-clamp-2">
+                    <p className="text-sm text-gray-600 line-clamp-2">
                       {concediu.motiv}
                     </p>
                   </div>
@@ -583,14 +583,14 @@ const GestiuneConcedii = () => {
                     <div className="flex items-center">
                       {getStatusIcon(concediu.status)}
                       <span
-                        className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
+                        className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
                           concediu.status
                         )}`}
                       >
                         {concediu.status.replace('_', ' ')}
                       </span>
                     </div>
-                    <span className={`px-2 py-1 status-text rounded-lg border ${getPrioritateColor(
+                    <span className={`px-2 py-1 text-xs font-medium rounded-lg border ${getPrioritateColor(
                       concediu.prioritate
                     )}`}>
                       {concediu.prioritate}
@@ -638,25 +638,25 @@ const GestiuneConcedii = () => {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Angajat
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Tip Concediu
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Perioada
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Zile
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Înlocuitor
                     </th>
-                    <th className="px-6 py-4 text-left form-label uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 mb-1 block uppercase tracking-wider">
                       Acțiuni
                     </th>
                   </tr>
@@ -684,7 +684,7 @@ const GestiuneConcedii = () => {
                             <div className="text-sm font-medium text-gray-900">
                               {concediu.angajat}
                             </div>
-                            <div className="body-small text-muted">
+                            <div className="text-sm text-gray-600 text-gray-500">
                               {concediu.departament}
                             </div>
                           </div>
@@ -702,7 +702,7 @@ const GestiuneConcedii = () => {
                         <div className="text-sm text-gray-900">
                           {formatDate(concediu.dataInceput)}
                         </div>
-                        <div className="body-small text-muted">
+                        <div className="text-sm text-gray-600 text-gray-500">
                           {formatDate(concediu.dataSfarsit)}
                         </div>
                       </td>
@@ -720,7 +720,7 @@ const GestiuneConcedii = () => {
                         <div className="flex items-center">
                           {getStatusIcon(concediu.status)}
                           <span
-                            className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
+                            className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
                               concediu.status
                             )}`}
                           >
@@ -732,7 +732,7 @@ const GestiuneConcedii = () => {
                         <div className="text-sm text-gray-900">
                           {concediu.inlocuitor || "Neasignat"}
                         </div>
-                        <div className="body-small text-muted">
+                        <div className="text-sm text-gray-600 text-gray-500">
                           {concediu.aprobatDe && `Aprobat: ${concediu.aprobatDe}`}
                         </div>
                       </td>
@@ -767,7 +767,7 @@ const GestiuneConcedii = () => {
       {/* Bulk Actions */}
       {selectedConcedii.length > 0 && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 px-6 py-3 flex items-center space-x-4 z-20">
-          <span className="body-small">
+          <span className="text-sm text-gray-600">
             {selectedConcedii.length} selectate
           </span>
           <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
@@ -797,7 +797,7 @@ const GestiuneConcedii = () => {
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="section-title">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {selectedLeave ? "Detalii Concediu" : "Cerere Nouă"}
                 </h2>
                 <button
@@ -816,7 +816,7 @@ const GestiuneConcedii = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Angajat
                     </label>
                     <input
@@ -827,7 +827,7 @@ const GestiuneConcedii = () => {
                     />
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Tip Concediu
                     </label>
                     <select
@@ -844,7 +844,7 @@ const GestiuneConcedii = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block form-label mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                         Data Început
                       </label>
                       <input
@@ -854,7 +854,7 @@ const GestiuneConcedii = () => {
                       />
                     </div>
                     <div>
-                      <label className="block form-label mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                         Data Sfârșit
                       </label>
                       <input
@@ -865,7 +865,7 @@ const GestiuneConcedii = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Înlocuitor
                     </label>
                     <input
@@ -879,7 +879,7 @@ const GestiuneConcedii = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Număr Zile
                     </label>
                     <input
@@ -890,7 +890,7 @@ const GestiuneConcedii = () => {
                     />
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Status
                     </label>
                     <select
@@ -904,7 +904,7 @@ const GestiuneConcedii = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Prioritate
                     </label>
                     <select
@@ -917,7 +917,7 @@ const GestiuneConcedii = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Contact
                     </label>
                     <input
@@ -931,7 +931,7 @@ const GestiuneConcedii = () => {
 
                 <div className="md:col-span-2 space-y-4">
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Motiv
                     </label>
                     <textarea
@@ -942,7 +942,7 @@ const GestiuneConcedii = () => {
                     />
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Observații
                     </label>
                     <textarea

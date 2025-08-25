@@ -112,7 +112,7 @@ const Sidebar = () => {
               <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <h1 className="ml-3 sidebar-brand">
+              <h1 className="ml-3 text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 ContIQ
               </h1>
             </div>
@@ -162,7 +162,7 @@ const Sidebar = () => {
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             {!isCollapsed && (
-              <h1 className="ml-3 sidebar-brand">
+              <h1 className="ml-3 text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                 ContIQ
               </h1>
             )}
@@ -227,7 +227,7 @@ const Sidebar = () => {
                         {!isCollapsed && (
                           <span
                             className={`
-                            ml-3 sidebar-menu
+                            ml-3 font-medium transition-all duration-200
                             ${isActive ? "text-orange-700" : ""}
                           `}
                           >
@@ -284,7 +284,7 @@ const Sidebar = () => {
                         {!isCollapsed && (
                           <span
                             className={`
-                            ml-3 sidebar-menu
+                            ml-3 font-medium transition-all duration-200
                             ${isActive ? "text-orange-700" : ""}
                           `}
                           >
@@ -328,7 +328,7 @@ const Sidebar = () => {
                               `}
                               />
                               <span
-                                className={`sidebar-submenu ${
+                                className={`text-sm ${
                                   isSubActive ? "font-medium" : ""
                                 }`}
                               >
@@ -395,10 +395,10 @@ const Sidebar = () => {
                   CA
                 </div>
                 <div className="ml-3">
-                  <div className="body-small font-semibold text-gray-800">
+                  <div className="text-sm text-gray-600 font-semibold text-gray-800">
                     Chiriac Alexandru
                   </div>
-                  <div className="body-xs">
+                  <div className="text-xs text-gray-500">
                     chiriac1910@gmail.com
                   </div>
                 </div>
@@ -409,7 +409,7 @@ const Sidebar = () => {
                 <Link 
                   to="/date-firma"
                   onClick={handleMobileMenuClose}
-                  className={`flex items-center w-full px-3 py-2 text-left sidebar-submenu rounded-lg transition-all duration-200 group block ${
+                  className={`flex items-center w-full px-3 py-2 text-left text-sm rounded-lg transition-all duration-200 group block ${
                     isActiveRoute("/date-firma") 
                       ? "bg-orange-50 text-orange-600" 
                       : "text-gray-700 hover:bg-gray-100"
@@ -425,7 +425,7 @@ const Sidebar = () => {
                 <Link 
                   to="/setari-cont"
                   onClick={handleMobileMenuClose}
-                  className={`flex items-center w-full px-3 py-2 text-left sidebar-submenu rounded-lg transition-all duration-200 group block ${
+                  className={`flex items-center w-full px-3 py-2 text-left text-sm rounded-lg transition-all duration-200 group block ${
                     isActiveRoute("/setari-cont") 
                       ? "bg-orange-50 text-orange-600" 
                       : "text-gray-700 hover:bg-gray-100"
@@ -438,7 +438,7 @@ const Sidebar = () => {
                   }`} />
                   Setări cont
                 </Link>
-                <button className="flex items-center w-full px-3 py-2 text-left sidebar-submenu text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group">
+                <button className="flex items-center w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group">
                   <LogOut className="w-4 h-4 mr-3 text-red-400 group-hover:text-red-600" />
                   Deconectare
                 </button>

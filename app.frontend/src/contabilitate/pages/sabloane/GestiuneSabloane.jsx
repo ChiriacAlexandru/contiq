@@ -323,7 +323,7 @@ const GestiuneSabloane = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="page-title">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
               Gestiune Șabloane
             </h1>
             <p className="mt-1 text-sm text-gray-600">
@@ -494,7 +494,7 @@ const GestiuneSabloane = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Șabloane</p>
-                <p className="page-title">
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {sabloane.length}
                 </p>
               </div>
@@ -507,7 +507,7 @@ const GestiuneSabloane = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Active</p>
-                <p className="page-title">
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {sabloane.filter((s) => s.status === "activ").length}
                 </p>
               </div>
@@ -520,7 +520,7 @@ const GestiuneSabloane = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Utilizări Total</p>
-                <p className="page-title">
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {sabloane.reduce((sum, s) => sum + s.utilizari, 0)}
                 </p>
               </div>
@@ -533,7 +533,7 @@ const GestiuneSabloane = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Categorii</p>
-                <p className="page-title">
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
                   {getCategorii().length}
                 </p>
               </div>

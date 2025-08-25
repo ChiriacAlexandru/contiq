@@ -119,10 +119,10 @@ const Login = () => {
                   <TrendingUp className="w-8 h-8 text-white" />
                 </div>
               </div>
-              <h1 className="page-title text-center">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 text-center">
                 Bine ai venit înapoi
               </h1>
-              <p className="body-small text-center mt-2">
+              <p className="text-sm text-gray-600 text-center mt-2">
                 Conectează-te pentru a accesa platforma ContIQ
               </p>
             </div>
@@ -132,13 +132,13 @@ const Login = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {errors.general && (
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                    <p className="body-small text-red-600">{errors.general}</p>
+                    <p className="text-sm text-gray-600 text-red-600">{errors.general}</p>
                   </div>
                 )}
 
                 {/* Email Field */}
                 <div>
-                  <label className="form-label">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
                     Email
                   </label>
                   <div className="relative">
@@ -157,13 +157,13 @@ const Login = () => {
                     />
                   </div>
                   {errors.email && (
-                    <p className="form-error">{errors.email}</p>
+                    <p className="text-xs text-red-600 mt-1">{errors.email}</p>
                   )}
                 </div>
 
                 {/* Password Field */}
                 <div>
-                  <label className="form-label">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
                     Parola
                   </label>
                   <div className="relative">
@@ -193,7 +193,7 @@ const Login = () => {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="form-error">{errors.password}</p>
+                    <p className="text-xs text-red-600 mt-1">{errors.password}</p>
                   )}
                 </div>
 
@@ -207,13 +207,13 @@ const Login = () => {
                       onChange={handleChange}
                       className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                     />
-                    <label className="body-small ml-2">
+                    <label className="text-sm text-gray-600 ml-2">
                       Ține-mă minte
                     </label>
                   </div>
                   <Link
                     to="/forgot-password"
-                    className="body-small text-orange-600 hover:text-orange-700 transition-colors"
+                    className="text-sm text-gray-600 text-orange-600 hover:text-orange-700 transition-colors"
                   >
                     Ai uitat parola?
                   </Link>
@@ -243,7 +243,7 @@ const Login = () => {
                     <div className="w-full border-t border-gray-200"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="body-small bg-white px-4 text-muted">
+                    <span className="text-sm text-gray-600 bg-white px-4 text-gray-500">
                       sau
                     </span>
                   </div>
@@ -251,7 +251,7 @@ const Login = () => {
 
                 {/* Register Link */}
                 <div className="text-center">
-                  <p className="body-small">
+                  <p className="text-sm text-gray-600">
                     Nu ai un cont?{' '}
                     <Link
                       to="/register"
@@ -266,7 +266,7 @@ const Login = () => {
 
             {/* Footer */}
             <div className="text-center mt-8">
-              <p className="meta-text">
+              <p className="text-xs text-gray-500">
                 © 2024 ContIQ. Toate drepturile rezervate.
               </p>
             </div>
@@ -277,10 +277,10 @@ const Login = () => {
         <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center bg-gradient-to-br from-orange-500 to-orange-600 text-white p-12">
           <div className="max-w-lg mx-auto">
             <div className="mb-12">
-              <h2 className="responsive-title text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-white mb-4">
                 Gestionează-ți afacerea cu ContIQ
               </h2>
-              <p className="body-large text-white">
+              <p className="text-lg text-gray-700 leading-relaxed text-white">
                 Platforma completă pentru contabilitate și management business. 
                 Simplu, rapid și securizat.
               </p>
@@ -297,10 +297,10 @@ const Login = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="card-title text-white mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3 text-white mb-2">
                         {feature.title}
                       </h3>
-                      <p className="body-small text-white">
+                      <p className="text-sm text-gray-600 text-white">
                         {feature.description}
                       </p>
                     </div>
@@ -312,14 +312,14 @@ const Login = () => {
             <div className="mt-12 p-6 bg-white/10 rounded-2xl backdrop-blur-sm">
               <div className="flex items-center mb-3">
                 <CheckCircle className="w-5 h-5 text-green-300 mr-2" />
-                <span className="body-small text-white font-medium">
+                <span className="text-sm text-gray-600 text-white font-medium">
                   Încrederea a peste 10,000+ companii
                 </span>
               </div>
-              <p className="body-small text-white">
+              <p className="text-sm text-gray-600 text-white">
                 "ContIQ ne-a simplificat procesele de contabilitate și ne-a economisit ore întregi pe săptămână."
               </p>
-              <p className="body-small text-white mt-2 font-medium">
+              <p className="text-sm text-gray-600 text-white mt-2 font-medium">
                 - Maria Popescu, CEO TechStart SRL
               </p>
             </div>

@@ -258,7 +258,7 @@ const Suport = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="responsive-title mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
               Centru de Suport
             </h1>
             <p className="text-lg text-gray-600">
@@ -360,7 +360,7 @@ const Suport = () => {
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
                     {category.icon}
                   </div>
-                  <h3 className="section-title mb-2">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 mb-2">
                     {category.title}
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -382,7 +382,7 @@ const Suport = () => {
         {activeTab === "faq" && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="page-title mb-6">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 mb-6">
                 Întrebări Frecvente
               </h2>
               <div className="space-y-4">
@@ -436,13 +436,13 @@ const Suport = () => {
           <div className="space-y-6">
             {/* Create New Ticket */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="page-title mb-6">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 mb-6">
                 Creează Tichet de Suport
               </h2>
               <form onSubmit={handleTicketSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Subiect
                     </label>
                     <input
@@ -455,7 +455,7 @@ const Suport = () => {
                     />
                   </div>
                   <div>
-                    <label className="block form-label mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
                       Categorie
                     </label>
                     <select
@@ -529,7 +529,7 @@ const Suport = () => {
 
             {/* Existing Tickets */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="section-title mb-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 mb-4">
                 Tichetele Tale
               </h3>
               <div className="space-y-4">
@@ -583,7 +583,7 @@ const Suport = () => {
             {/* Contact Options */}
             <div className="space-y-6">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h2 className="page-title mb-6">
+                <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 mb-6">
                   Contactează-ne Direct
                 </h2>
                 <div className="space-y-4">
@@ -626,7 +626,7 @@ const Suport = () => {
 
               {/* Business Hours */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 className="card-title mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 mb-4">
                   Program Suport
                 </h3>
                 <div className="space-y-2 text-sm">
@@ -648,7 +648,7 @@ const Suport = () => {
 
             {/* Contact Form */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="section-title mb-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 mb-6">
                 Trimite-ne un Mesaj
               </h3>
               <form className="space-y-4">
