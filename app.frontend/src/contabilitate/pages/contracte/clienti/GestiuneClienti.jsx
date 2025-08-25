@@ -152,7 +152,7 @@ const GestiuneClienti = () => {
       <Star
         key={i}
         className={`w-4 h-4 ${
-          i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+          i < rating ? "text-white fill-white" : "text-gray-300"
         }`}
       />
     ));
@@ -199,10 +199,10 @@ const GestiuneClienti = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="page-title">
               Gestiune Clienți
             </h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 body-small">
               Administrează baza de date cu clienți și parteneri
             </p>
           </div>
@@ -289,8 +289,8 @@ const GestiuneClienti = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Clienți</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">Total Clienți</p>
+                <p className="page-title">
                   {clienti.length}
                 </p>
                 <p className="text-xs text-green-600 mt-1">+12% luna aceasta</p>
@@ -303,15 +303,15 @@ const GestiuneClienti = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Clienți Activi</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">Clienți Activi</p>
+                <p className="page-title">
                   {
                     clienti.filter(
                       (c) => c.status === "activ" || c.status === "vip"
                     ).length
                   }
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="body-small mt-1">
                   {Math.round(
                     (clienti.filter(
                       (c) => c.status === "activ" || c.status === "vip"
@@ -330,8 +330,8 @@ const GestiuneClienti = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Valoare Totală</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">Valoare Totală</p>
+                <p className="page-title">
                   {clienti
                     .reduce((sum, c) => sum + c.valoareTotala, 0)
                     .toLocaleString("ro-RO")}{" "}
@@ -349,8 +349,8 @@ const GestiuneClienti = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Clienți VIP</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">Clienți VIP</p>
+                <p className="page-title">
                   {clienti.filter((c) => c.status === "vip").length}
                 </p>
                 <p className="text-xs text-purple-600 mt-1">Premium</p>
@@ -381,10 +381,10 @@ const GestiuneClienti = () => {
                         )}
                       </div>
                       <div className="ml-3">
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="card-title">
                           {client.nume}
                         </h3>
-                        <p className="text-xs text-gray-500">{client.tip}</p>
+                        <p className="body-xs">{client.tip}</p>
                       </div>
                     </div>
                     <input
@@ -396,19 +396,19 @@ const GestiuneClienti = () => {
                   </div>
 
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center body-small">
                       <Mail className="w-4 h-4 mr-2 text-gray-400" />
                       <span className="truncate">{client.email}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center body-small">
                       <Phone className="w-4 h-4 mr-2 text-gray-400" />
                       {client.telefon}
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center body-small">
                       <MapPin className="w-4 h-4 mr-2 text-gray-400" />
                       <span className="truncate">{client.adresa}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center body-small">
                       <Shield className="w-4 h-4 mr-2 text-gray-400" />
                       CUI: {client.cui}
                     </div>
@@ -419,7 +419,7 @@ const GestiuneClienti = () => {
                       {getRatingStars(client.rating)}
                     </div>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
+                      className={`px-2 py-1 status-text rounded-lg ${getStatusColor(
                         client.status
                       )}`}
                     >
@@ -429,14 +429,14 @@ const GestiuneClienti = () => {
 
                   <div className="grid grid-cols-2 gap-3 mb-4 pt-4 border-t border-gray-100">
                     <div>
-                      <p className="text-xs text-gray-500">Total Facturi</p>
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="body-xs">Total Facturi</p>
+                      <p className="card-title">
                         {client.totalFacturi}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Valoare Totală</p>
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="body-xs">Valoare Totală</p>
+                      <p className="card-title">
                         {client.valoareTotala.toLocaleString("ro-RO")} RON
                       </p>
                     </div>
@@ -484,28 +484,28 @@ const GestiuneClienti = () => {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Client
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Contact
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       CUI
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Facturi
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Valoare Totală
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Rating
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left status-text text-gray-700 uppercase tracking-wider">
                       Acțiuni
                     </th>
                   </tr>
@@ -537,7 +537,7 @@ const GestiuneClienti = () => {
                             <div className="text-sm font-medium text-gray-900">
                               {client.nume}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="body-xs">
                               {client.tip}
                             </div>
                           </div>
@@ -547,7 +547,7 @@ const GestiuneClienti = () => {
                         <div className="text-sm text-gray-900">
                           {client.email}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="body-xs">
                           {client.telefon}
                         </div>
                       </td>
@@ -579,7 +579,7 @@ const GestiuneClienti = () => {
                             )}`}
                           ></div>
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
+                            className={`px-2 py-1 status-text rounded-lg ${getStatusColor(
                               client.status
                             )}`}
                           >
@@ -621,7 +621,7 @@ const GestiuneClienti = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="section-title">
                   Adaugă Client Nou
                 </h2>
                 <button
@@ -636,7 +636,7 @@ const GestiuneClienti = () => {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Tip Client *
                   </label>
                   <div className="flex gap-4">
@@ -663,7 +663,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Nume Companie / Nume Complet *
                   </label>
                   <input
@@ -674,7 +674,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     CUI / CNP *
                   </label>
                   <input
@@ -685,7 +685,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Nr. Reg. Comerț
                   </label>
                   <input
@@ -696,7 +696,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Email *
                   </label>
                   <input
@@ -707,7 +707,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Telefon *
                   </label>
                   <input
@@ -718,7 +718,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Adresă *
                   </label>
                   <input
@@ -729,7 +729,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Persoană de Contact
                   </label>
                   <input
@@ -740,7 +740,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Website
                   </label>
                   <input
@@ -751,7 +751,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Cont Bancar
                   </label>
                   <input
@@ -762,7 +762,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Bancă
                   </label>
                   <input
@@ -773,7 +773,7 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Observații
                   </label>
                   <textarea
@@ -815,10 +815,10 @@ const GestiuneClienti = () => {
                     )}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="section-title">
                       {selectedClient.nume}
                     </h2>
-                    <p className="text-sm text-gray-600">
+                    <p className="body-small">
                       {selectedClient.tip}
                     </p>
                   </div>
@@ -854,17 +854,17 @@ const GestiuneClienti = () => {
               {/* General Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  <h3 className="card-title mb-3">
                     Date de Contact
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-start">
                       <Mail className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Email
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="body-small">
                           {selectedClient.email}
                         </p>
                       </div>
@@ -872,10 +872,10 @@ const GestiuneClienti = () => {
                     <div className="flex items-start">
                       <Phone className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Telefon
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="body-small">
                           {selectedClient.telefon}
                         </p>
                       </div>
@@ -883,10 +883,10 @@ const GestiuneClienti = () => {
                     <div className="flex items-start">
                       <MapPin className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Adresă
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="body-small">
                           {selectedClient.adresa}
                         </p>
                       </div>
@@ -894,10 +894,10 @@ const GestiuneClienti = () => {
                     <div className="flex items-start">
                       <User className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Reprezentant
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="body-small">
                           {selectedClient.reprezentant}
                         </p>
                       </div>
@@ -906,15 +906,15 @@ const GestiuneClienti = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  <h3 className="card-title mb-3">
                     Date Fiscale
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-start">
                       <Shield className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">CUI</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="form-label">CUI</p>
+                        <p className="body-small">
                           {selectedClient.cui}
                         </p>
                       </div>
@@ -922,10 +922,10 @@ const GestiuneClienti = () => {
                     <div className="flex items-start">
                       <Calendar className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Client din
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="body-small">
                           {new Date(
                             selectedClient.dataInregistrare
                           ).toLocaleDateString("ro-RO")}
@@ -935,11 +935,11 @@ const GestiuneClienti = () => {
                     <div className="flex items-start">
                       <Activity className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Status
                         </p>
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
+                          className={`inline-flex px-2 py-1 status-text rounded-lg ${getStatusColor(
                             selectedClient.status
                           )}`}
                         >
@@ -950,7 +950,7 @@ const GestiuneClienti = () => {
                     <div className="flex items-start">
                       <Star className="w-4 h-4 text-gray-400 mt-0.5 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-700">
+                        <p className="form-label">
                           Rating
                         </p>
                         <div className="flex items-center mt-1">
@@ -964,33 +964,33 @@ const GestiuneClienti = () => {
 
               {/* Statistics */}
               <div className="mt-6 pt-6 border-t border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                <h3 className="card-title mb-4">
                   Statistici
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-500">Total Facturi</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="body-xs">Total Facturi</p>
+                    <p className="card-title">
                       {selectedClient.totalFacturi}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-500">Valoare Totală</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="body-xs">Valoare Totală</p>
+                    <p className="card-title">
                       {selectedClient.valoareTotala.toLocaleString("ro-RO")} RON
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-500">Ultima Factură</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="body-xs">Ultima Factură</p>
+                    <p className="card-title">
                       {new Date(
                         selectedClient.ultimaFactura
                       ).toLocaleDateString("ro-RO")}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-500">Valoare Medie</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="body-xs">Valoare Medie</p>
+                    <p className="card-title">
                       {Math.round(
                         selectedClient.valoareTotala /
                           selectedClient.totalFacturi
@@ -1028,7 +1028,7 @@ const GestiuneClienti = () => {
       {/* Bulk Actions */}
       {selectedClienti.length > 0 && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 px-6 py-3 flex items-center space-x-4 z-20">
-          <span className="text-sm text-gray-600">
+          <span className="body-small">
             {selectedClienti.length} selectați
           </span>
           <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">

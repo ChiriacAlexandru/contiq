@@ -102,7 +102,7 @@ const DocumenteIntrare = () => {
       case "procesat":
         return "bg-green-100 text-green-700";
       case "în procesare":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-yellow-100 text-white";
       case "eroare":
         return "bg-red-100 text-red-700";
       default:
@@ -115,7 +115,7 @@ const DocumenteIntrare = () => {
       case "procesat":
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case "în procesare":
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-white" />;
       case "eroare":
         return <AlertCircle className="w-4 h-4 text-red-600" />;
       default:
@@ -216,10 +216,10 @@ const DocumenteIntrare = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="page-title">
               Documente de Intrare
             </h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 body-small">
               Încarcă și gestionează documentele primite
             </p>
           </div>
@@ -300,8 +300,8 @@ const DocumenteIntrare = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Documente</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">Total Documente</p>
+                <p className="section-title">
                   {documente.length}
                 </p>
               </div>
@@ -313,8 +313,8 @@ const DocumenteIntrare = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Procesate</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">Procesate</p>
+                <p className="section-title">
                   {documente.filter((d) => d.status === "procesat").length}
                 </p>
               </div>
@@ -326,8 +326,8 @@ const DocumenteIntrare = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">În Procesare</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="body-small">În Procesare</p>
+                <p className="section-title">
                   {documente.filter((d) => d.status === "în procesare").length}
                 </p>
               </div>
@@ -339,8 +339,8 @@ const DocumenteIntrare = () => {
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Spațiu S3</p>
-                <p className="text-2xl font-bold text-gray-900">12.5 GB</p>
+                <p className="body-small">Spațiu S3</p>
+                <p className="section-title">12.5 GB</p>
               </div>
               <div className="p-3 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
                 <CloudUpload className="w-5 h-5 text-white" />
@@ -361,7 +361,7 @@ const DocumenteIntrare = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
                       {getFileIcon(doc.tip)}
-                      <span className="ml-2 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg">
+                      <span className="ml-2 px-2 py-1 status-text bg-gray-100 text-gray-700 rounded-lg">
                         {doc.tip}
                       </span>
                     </div>
@@ -376,7 +376,7 @@ const DocumenteIntrare = () => {
                   <h3 className="font-semibold text-gray-900 mb-1 truncate">
                     {doc.nume}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-3 truncate">
+                  <p className="body-small mb-3 truncate">
                     {doc.furnizor}
                   </p>
 
@@ -393,7 +393,7 @@ const DocumenteIntrare = () => {
                     <div className="flex items-center">
                       {getStatusIcon(doc.status)}
                       <span
-                        className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
+                        className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
                           doc.status
                         )}`}
                       >
@@ -439,25 +439,25 @@ const DocumenteIntrare = () => {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Nume Document
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Tip
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Furnizor
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Data
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Dimensiune
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left meta-text uppercase tracking-wider">
                       Acțiuni
                     </th>
                   </tr>
@@ -479,29 +479,29 @@ const DocumenteIntrare = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className="mr-3">{getFileIcon(doc.tip)}</div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="btn-text-normal text-gray-900">
                             {doc.nume}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg">
+                        <span className="px-2 py-1 status-text bg-gray-100 text-gray-700 rounded-lg">
                           {doc.tip}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
+                        <div className="body-small text-gray-900">
                           {doc.furnizor}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
+                        <div className="body-small">
                           {new Date(doc.data).toLocaleDateString("ro-RO")} •{" "}
                           {doc.ora}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
+                        <div className="body-small">
                           {doc.dimensiune}
                         </div>
                       </td>
@@ -509,7 +509,7 @@ const DocumenteIntrare = () => {
                         <div className="flex items-center">
                           {getStatusIcon(doc.status)}
                           <span
-                            className={`ml-2 px-2 py-1 text-xs font-medium rounded-lg ${getStatusColor(
+                            className={`ml-2 px-2 py-1 status-text rounded-lg ${getStatusColor(
                               doc.status
                             )}`}
                           >
@@ -548,7 +548,7 @@ const DocumenteIntrare = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="section-title">
                   Încarcă Documente
                 </h2>
                 <button
@@ -571,10 +571,10 @@ const DocumenteIntrare = () => {
                 onDrop={handleDrop}
               >
                 <CloudUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="card-title mb-2">
                   Trage fișierele aici sau
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="body-small mb-4">
                   Acceptăm PDF, JPG, PNG, XLSX până la 10MB
                 </p>
                 <label className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer transition-colors">
@@ -601,17 +601,17 @@ const DocumenteIntrare = () => {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center">
                           <File className="w-5 h-5 text-gray-600 mr-3" />
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="btn-text-normal text-gray-900">
                             {file.name}
                           </span>
-                          <span className="ml-2 text-xs text-gray-500">
+                          <span className="ml-2 body-xs text-muted">
                             {file.size}
                           </span>
                         </div>
                         {file.status === "completed" ? (
                           <CheckCircle className="w-5 h-5 text-green-500" />
                         ) : (
-                          <span className="text-xs text-gray-600">
+                          <span className="body-xs">
                             {file.progress}%
                           </span>
                         )}
@@ -634,7 +634,7 @@ const DocumenteIntrare = () => {
               {/* Form Fields */}
               <div className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Furnizor
                   </label>
                   <input
@@ -644,7 +644,7 @@ const DocumenteIntrare = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Categorie
                   </label>
                   <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -656,7 +656,7 @@ const DocumenteIntrare = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block form-label mb-1">
                     Observații
                   </label>
                   <textarea
@@ -686,7 +686,7 @@ const DocumenteIntrare = () => {
       {/* Bulk Actions */}
       {selectedDocumente.length > 0 && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-lg border border-gray-200 px-6 py-3 flex items-center space-x-4 z-20">
-          <span className="text-sm text-gray-600">
+          <span className="body-small">
             {selectedDocumente.length} selectate
           </span>
           <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">

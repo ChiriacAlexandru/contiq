@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Home,
   FileText,
@@ -23,28 +24,28 @@ import {
   Search,
 } from "lucide-react";
 
-const Sidebar = ({ currentPage, onPageChange }) => {
+const Sidebar = () => {
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState(["Contracte"]);
 
   const menuItems = [
-    { icon: Home, label: "Dashboard", href: "#" },
-    { icon: FileText, label: "Documente de ieșire", href: "#" },
-    { icon: FileInput, label: "Documente de intrare", href: "#" },
+    { icon: Home, label: "Dashboard", path: "/dashboard" },
+    { icon: FileText, label: "Documente de ieșire", path: "/documente-iesire" },
+    { icon: FileInput, label: "Documente de intrare", path: "/documente-intrare" },
     {
       icon: BarChart3,
       label: "Contracte",
-      href: "#",
       hasSubmenu: true,
       submenu: [
-        { icon: Users, label: "Clienți", href: "#" },
-        { icon: Package, label: "Produse", href: "#" },
-        { icon: User, label: "Angajați", href: "#" },
-        { icon: Calendar, label: "Concedii", href: "#" },
+        { icon: Users, label: "Clienți", path: "/clienti" },
+        { icon: Package, label: "Produse", path: "/produse" },
+        { icon: User, label: "Angajați", path: "/angajati" },
+        { icon: Calendar, label: "Concedii", path: "/concedii" },
       ],
     },
-    { icon: File, label: "Șabloane", href: "#" },
+    { icon: File, label: "Șabloane", path: "/sabloane" },
   ];
 
   const toggleMobileMenu = () => {
@@ -59,11 +60,36 @@ const Sidebar = ({ currentPage, onPageChange }) => {
     );
   };
 
-  const handleItemClick = (label) => {
-    onPageChange(label);
+  const handleMobileMenuClose = () => {
     if (window.innerWidth < 1024) {
       setIsMobileMenuOpen(false);
     }
+  };
+
+  const isActiveRoute = (path) => {
+    return location.pathname === path;
+  };
+
+  const getPageTitle = () => {
+    const currentRoute = menuItems.find(item => 
+      item.path === location.pathname || 
+      (item.submenu && item.submenu.find(subItem => subItem.path === location.pathname))
+    );
+    
+    if (currentRoute) {
+      if (currentRoute.path === location.pathname) {
+        return currentRoute.label;
+      }
+      const subRoute = currentRoute.submenu?.find(subItem => subItem.path === location.pathname);
+      return subRoute?.label || "Dashboard";
+    }
+    
+    // Handle settings pages
+    if (location.pathname === '/date-firma') return 'Date firmă';
+    if (location.pathname === '/setari-cont') return 'Setări cont';
+    if (location.pathname === '/suport') return 'Suport';
+    
+    return "Dashboard";
   };
 
   return (
@@ -86,7 +112,7 @@ const Sidebar = ({ currentPage, onPageChange }) => {
               <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <h1 className="ml-3 text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              <h1 className="ml-3 sidebar-brand">
                 ContIQ
               </h1>
             </div>
@@ -136,7 +162,7 @@ const Sidebar = ({ currentPage, onPageChange }) => {
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             {!isCollapsed && (
-              <h1 className="ml-3 text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+              <h1 className="ml-3 sidebar-brand">
                 ContIQ
               </h1>
             )}
@@ -159,86 +185,131 @@ const Sidebar = ({ currentPage, onPageChange }) => {
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
               const isExpanded = expandedMenus.includes(item.label);
-              const isActive = currentPage === item.label;
+              const isActive = item.path ? isActiveRoute(item.path) : false;
 
               return (
                 <li key={index}>
-                  <button
-                    onClick={() => {
-                      if (item.hasSubmenu) {
-                        toggleSubmenu(item.label);
-                      } else {
-                        handleItemClick(item.label);
-                      }
-                    }}
-                    className={`
-                      w-full flex items-center justify-between px-3 py-2.5 rounded-xl
-                      transition-all duration-200 group
-                      ${
-                        isActive
-                          ? "bg-gradient-to-r from-orange-50 to-orange-100/50 text-orange-600 shadow-sm"
-                          : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"
-                      }
-                    `}
-                  >
-                    <div className="flex items-center">
-                      <div
-                        className={`
-                        p-2 rounded-lg transition-all duration-200
+                  {item.hasSubmenu ? (
+                    <button
+                      onClick={() => toggleSubmenu(item.label)}
+                      className={`
+                        w-full flex items-center justify-between px-3 py-2.5 rounded-xl
+                        transition-all duration-200 group
                         ${
                           isActive
-                            ? "bg-orange-500 shadow-lg shadow-orange-500/30"
-                            : "bg-gray-100 group-hover:bg-gray-200"
+                            ? "bg-gradient-to-r from-orange-50 to-orange-100/50 text-orange-600 shadow-sm"
+                            : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"
                         }
                       `}
-                      >
-                        <IconComponent
+                    >
+                      <div className="flex items-center">
+                        <div
                           className={`
-                          w-5 h-5 transition-all duration-200
+                          p-2 rounded-lg transition-all duration-200
                           ${
                             isActive
-                              ? "text-white"
-                              : "text-gray-600 group-hover:text-gray-800"
+                              ? "bg-orange-500 shadow-lg shadow-orange-500/30"
+                              : "bg-gray-100 group-hover:bg-gray-200"
                           }
                         `}
-                        />
+                        >
+                          <IconComponent
+                            className={`
+                            w-5 h-5 transition-all duration-200
+                            ${
+                              isActive
+                                ? "text-white"
+                                : "text-gray-600 group-hover:text-gray-800"
+                            }
+                          `}
+                          />
+                        </div>
+                        {!isCollapsed && (
+                          <span
+                            className={`
+                            ml-3 sidebar-menu
+                            ${isActive ? "text-orange-700" : ""}
+                          `}
+                          >
+                            {item.label}
+                          </span>
+                        )}
                       </div>
-                      {!isCollapsed && (
-                        <span
+                      {!isCollapsed && item.hasSubmenu && (
+                        <ChevronDown
                           className={`
-                          ml-3 font-medium transition-all duration-200
-                          ${isActive ? "text-orange-700" : ""}
+                          w-4 h-4 transition-transform duration-200
+                          ${isExpanded ? "rotate-180" : ""}
+                          ${isActive ? "text-orange-600" : "text-gray-400"}
+                        `}
+                        />
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      onClick={handleMobileMenuClose}
+                      className={`
+                        w-full flex items-center justify-between px-3 py-2.5 rounded-xl
+                        transition-all duration-200 group block
+                        ${
+                          isActive
+                            ? "bg-gradient-to-r from-orange-50 to-orange-100/50 text-orange-600 shadow-sm"
+                            : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center">
+                        <div
+                          className={`
+                          p-2 rounded-lg transition-all duration-200
+                          ${
+                            isActive
+                              ? "bg-orange-500 shadow-lg shadow-orange-500/30"
+                              : "bg-gray-100 group-hover:bg-gray-200"
+                          }
                         `}
                         >
-                          {item.label}
-                        </span>
-                      )}
-                    </div>
-                    {!isCollapsed && item.hasSubmenu && (
-                      <ChevronDown
-                        className={`
-                        w-4 h-4 transition-transform duration-200
-                        ${isExpanded ? "rotate-180" : ""}
-                        ${isActive ? "text-orange-600" : "text-gray-400"}
-                      `}
-                      />
-                    )}
-                  </button>
+                          <IconComponent
+                            className={`
+                            w-5 h-5 transition-all duration-200
+                            ${
+                              isActive
+                                ? "text-white"
+                                : "text-gray-600 group-hover:text-gray-800"
+                            }
+                          `}
+                          />
+                        </div>
+                        {!isCollapsed && (
+                          <span
+                            className={`
+                            ml-3 sidebar-menu
+                            ${isActive ? "text-orange-700" : ""}
+                          `}
+                          >
+                            {item.label}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  )}
 
                   {/* Submenu */}
                   {item.hasSubmenu && isExpanded && !isCollapsed && (
                     <ul className="mt-1 ml-5 space-y-1">
                       {item.submenu.map((subItem, subIndex) => {
                         const SubIconComponent = subItem.icon;
-                        const isSubActive = currentPage === subItem.label;
+                        const isSubActive = isActiveRoute(subItem.path);
 
                         return (
                           <li key={subIndex}>
-                            <button
-                              onClick={() => handleItemClick(subItem.label)}
+                            <Link
+                              to={subItem.path}
+                              onClick={handleMobileMenuClose}
                               className={`
                                 w-full flex items-center px-3 py-2 rounded-lg
-                                transition-all duration-200 group
+                                transition-all duration-200 group block
                                 ${
                                   isSubActive
                                     ? "bg-orange-50 text-orange-600"
@@ -257,13 +328,13 @@ const Sidebar = ({ currentPage, onPageChange }) => {
                               `}
                               />
                               <span
-                                className={`text-sm ${
+                                className={`sidebar-submenu ${
                                   isSubActive ? "font-medium" : ""
                                 }`}
                               >
                                 {subItem.label}
                               </span>
-                            </button>
+                            </Link>
                           </li>
                         );
                       })}
@@ -276,13 +347,14 @@ const Sidebar = ({ currentPage, onPageChange }) => {
 
           {/* Support Section */}
           <div className="mt-8 pt-6 border-t border-gray-100">
-            <button
-              onClick={() => handleItemClick("Suport")}
+            <Link
+              to="/suport"
+              onClick={handleMobileMenuClose}
               className={`
                 w-full flex items-center px-3 py-2.5 rounded-xl
-                transition-all duration-200 group
+                transition-all duration-200 group block
                 ${
-                  currentPage === "Suport"
+                  isActiveRoute("/suport")
                     ? "bg-gradient-to-r from-blue-50 to-blue-100/50 text-blue-600"
                     : "hover:bg-gray-50 text-gray-700"
                 }
@@ -292,7 +364,7 @@ const Sidebar = ({ currentPage, onPageChange }) => {
                 className={`
                 p-2 rounded-lg transition-all duration-200
                 ${
-                  currentPage === "Suport"
+                  isActiveRoute("/suport")
                     ? "bg-blue-500 shadow-lg shadow-blue-500/30"
                     : "bg-gray-100 group-hover:bg-gray-200"
                 }
@@ -302,7 +374,7 @@ const Sidebar = ({ currentPage, onPageChange }) => {
                   className={`
                   w-5 h-5
                   ${
-                    currentPage === "Suport"
+                    isActiveRoute("/suport")
                       ? "text-white"
                       : "text-gray-600 group-hover:text-gray-800"
                   }
@@ -310,7 +382,7 @@ const Sidebar = ({ currentPage, onPageChange }) => {
                 />
               </div>
               {!isCollapsed && <span className="ml-3 font-medium">Suport</span>}
-            </button>
+            </Link>
           </div>
         </nav>
 
@@ -323,10 +395,10 @@ const Sidebar = ({ currentPage, onPageChange }) => {
                   CA
                 </div>
                 <div className="ml-3">
-                  <div className="text-sm font-semibold text-gray-800">
+                  <div className="body-small font-semibold text-gray-800">
                     Chiriac Alexandru
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="body-xs">
                     chiriac1910@gmail.com
                   </div>
                 </div>
@@ -334,15 +406,39 @@ const Sidebar = ({ currentPage, onPageChange }) => {
 
               {/* Action Buttons */}
               <div className="space-y-1">
-                <button className="flex items-center w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                  <Settings className="w-4 h-4 mr-3 text-gray-400 group-hover:text-gray-600" />
+                <Link 
+                  to="/date-firma"
+                  onClick={handleMobileMenuClose}
+                  className={`flex items-center w-full px-3 py-2 text-left sidebar-submenu rounded-lg transition-all duration-200 group block ${
+                    isActiveRoute("/date-firma") 
+                      ? "bg-orange-50 text-orange-600" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Settings className={`w-4 h-4 mr-3 ${
+                    isActiveRoute("/date-firma") 
+                      ? "text-orange-500" 
+                      : "text-gray-400 group-hover:text-gray-600"
+                  }`} />
                   Date firmă
-                </button>
-                <button className="flex items-center w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                  <Wrench className="w-4 h-4 mr-3 text-gray-400 group-hover:text-gray-600" />
+                </Link>
+                <Link 
+                  to="/setari-cont"
+                  onClick={handleMobileMenuClose}
+                  className={`flex items-center w-full px-3 py-2 text-left sidebar-submenu rounded-lg transition-all duration-200 group block ${
+                    isActiveRoute("/setari-cont") 
+                      ? "bg-orange-50 text-orange-600" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Wrench className={`w-4 h-4 mr-3 ${
+                    isActiveRoute("/setari-cont") 
+                      ? "text-orange-500" 
+                      : "text-gray-400 group-hover:text-gray-600"
+                  }`} />
                   Setări cont
-                </button>
-                <button className="flex items-center w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group">
+                </Link>
+                <button className="flex items-center w-full px-3 py-2 text-left sidebar-submenu text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group">
                   <LogOut className="w-4 h-4 mr-3 text-red-400 group-hover:text-red-600" />
                   Deconectare
                 </button>
