@@ -308,21 +308,6 @@ const Login = () => {
                 );
               })}
             </div>
-
-            <div className="mt-12 p-6 bg-white/10 rounded-2xl backdrop-blur-sm">
-              <div className="flex items-center mb-3">
-                <CheckCircle className="w-5 h-5 text-green-300 mr-2" />
-                <span className="text-sm text-gray-600 text-white font-medium">
-                  Încrederea a peste 10,000+ companii
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 text-white">
-                "ContIQ ne-a simplificat procesele de contabilitate și ne-a economisit ore întregi pe săptămână."
-              </p>
-              <p className="text-sm text-gray-600 text-white mt-2 font-medium">
-                - Maria Popescu, CEO TechStart SRL
-              </p>
-            </div>
           </div>
         </div>
       </div>

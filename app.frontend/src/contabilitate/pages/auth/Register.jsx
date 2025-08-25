@@ -549,23 +549,7 @@ const Register = () => {
             </div>
 
             <div className="mt-12">
-              <div className="flex items-center space-x-4 text-white">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">JP</span>
-                  </div>
-                  <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">MA</span>
-                  </div>
-                  <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">IC</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Înregistrări recent</p>
-                  <p className="text-xs text-gray-500">3 companii în ultima oră</p>
-                </div>
-              </div>
+              {/* Eliminat secțiunea cu JP, MA, IC, Înregistrări recent, 3 companii în ultima oră */}
             </div>
           </div>
         </div>
