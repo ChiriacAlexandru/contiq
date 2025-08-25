@@ -1,7 +1,25 @@
 {
+  "name": "contiq-backend",
+  "version": "1.0.0",
+  "description": "ContIQ Backend Server with Express.js and PostgreSQL",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "migrate": "node scripts/migrate.js run",
+    "migrate:up": "node scripts/migrate.js up",
+    "migrate:down": "node scripts/migrate.js down",
+    "migrate:status": "node scripts/migrate.js status",
+    "migrate:rollback": "node scripts/migrate.js rollback"
+  },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-cors": "^0.0.3",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.10",
     "postgres": "^3.4.7"

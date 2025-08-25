@@ -1,0 +1,12 @@
+-- Migration: Create users table
+-- Created: 2025-01-25
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  activated BOOLEAN DEFAULT FALSE,
+  user_type_id INTEGER REFERENCES user_types(id) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
