@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { UserService, ApiClient } from "../../../config/api";
 import {
   Building,
   MapPin,
@@ -28,73 +29,413 @@ import {
   User,
   Settings,
   Info,
+  ChevronDown,
 } from "lucide-react";
 
 const DateFirma = () => {
   const [activeTab, setActiveTab] = useState("general");
   const [isEditing, setIsEditing] = useState(false);
   const [showApiKeys, setShowApiKeys] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     // General Info
-    numeFirma: "SC ContIQ Solutions SRL",
-    cui: "RO12345678",
-    nrRegComert: "J40/1234/2024",
-    adresaSediu: "Str. Aviatorilor nr. 15, Sector 1",
-    oras: "București",
-    judet: "Ilfov",
-    codPostal: "014012",
+    numeFirma: "",
+    cui: "",
+    nrRegComert: "",
+    adresaSediu: "",
+    oras: "",
+    judet: "",
+    codPostal: "",
     tara: "România",
-    telefon: "+40 312 345 678",
-    email: "contact@contiq.ro",
-    website: "www.contiq.ro",
+    telefon: "",
+    email: "",
+    website: "",
     
     // Financial Info
-    capitalSocial: "50000",
-    contBancar: "RO49 AAAA 1B31 0075 9384 0000",
-    banca: "Banca Transilvania",
-    platitorTVA: true,
+    capitalSocial: "",
+    contBancar: "",
+    banca: "",
+    platitorTVA: false,
     
     // Representative
-    reprezentantLegal: "Chiriac Alexandru",
+    reprezentantLegal: "",
     functieReprezentant: "Administrator",
-    cnpReprezentant: "1234567890123",
+    cnpReprezentant: "",
     
     // Other Settings
-    anFiscal: "2025",
+    anFiscal: new Date().getFullYear().toString(),
     monedaPrincipala: "RON",
     limbaImplicita: "RO",
     timpZona: "Europe/Bucharest"
   });
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "success",
-      message: "Datele companiei au fost actualizate cu succes",
-      show: false
+  const [notifications, setNotifications] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState({
+    code: "RO",
+    name: "România", 
+    prefix: "+40",
+    flag: "🇷🇴"
+  });
+
+  // Country data with phone prefixes
+  const countries = [
+    { code: "RO", name: "România", prefix: "+40", flag: "🇷🇴" },
+    { code: "US", name: "United States", prefix: "+1", flag: "🇺🇸" },
+    { code: "GB", name: "United Kingdom", prefix: "+44", flag: "🇬🇧" },
+    { code: "DE", name: "Germany", prefix: "+49", flag: "🇩🇪" },
+    { code: "FR", name: "France", prefix: "+33", flag: "🇫🇷" },
+    { code: "IT", name: "Italy", prefix: "+39", flag: "🇮🇹" },
+    { code: "ES", name: "Spain", prefix: "+34", flag: "🇪🇸" },
+    { code: "HU", name: "Hungary", prefix: "+36", flag: "🇭🇺" },
+    { code: "BG", name: "Bulgaria", prefix: "+359", flag: "🇧🇬" },
+    { code: "PL", name: "Poland", prefix: "+48", flag: "🇵🇱" }
+  ];
+
+  // Load company data on component mount
+  useEffect(() => {
+    const loadCompanyData = async () => {
+      try {
+        setIsLoading(true);
+        const profile = await UserService.getProfile();
+        
+        if (profile && profile.profile) {
+          const companyData = profile.profile;
+          
+          // Map backend data to frontend form structure
+          setFormData(prev => ({
+            ...prev,
+            // General Info
+            numeFirma: companyData.nume_firma || "",
+            cui: companyData.cui || "",
+            nrRegComert: companyData.nr_reg_comert || "",
+            adresaSediu: companyData.adresa_sediu || "",
+            oras: companyData.oras || "",
+            judet: companyData.judet || "",
+            codPostal: companyData.cod_postal || "",
+            tara: companyData.tara || "România",
+            telefon: companyData.telefon || "",
+            email: companyData.email || "",
+            website: companyData.website || "",
+            
+            // Financial Info
+            capitalSocial: companyData.capital_social || "",
+            contBancar: companyData.cont_bancar || "",
+            banca: companyData.banca || "",
+            platitorTVA: companyData.platitor_tva || false,
+            
+            // Representative
+            reprezentantLegal: companyData.reprezentant_legal || "",
+            functieReprezentant: companyData.functie_reprezentant || "Administrator",
+            cnpReprezentant: companyData.cnp_reprezentant || "",
+            
+            // Other Settings
+            anFiscal: companyData.an_fiscal || new Date().getFullYear().toString(),
+            monedaPrincipala: companyData.moneda_principala || "RON",
+            limbaImplicita: companyData.limba_implicita || "RO",
+            timpZona: companyData.timp_zona || "Europe/Bucharest"
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading company data:', error);
+        showNotification("error", "Eroare la încărcarea datelor companiei");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCompanyData();
+  }, []);
+
+  // Real-time validation functions
+  const validateCUI = (cui, isPlatitorTVA) => {
+    if (!cui || cui.trim() === '') return null;
+    
+    const cleanCui = cui.trim().toUpperCase();
+    
+    if (isPlatitorTVA) {
+      // For TVA payers, CUI must start with RO
+      if (!cleanCui.startsWith('RO')) {
+        return 'Pentru plătitorii de TVA, CUI-ul trebuie să înceapă cu RO';
+      }
+      const numbers = cleanCui.substring(2);
+      if (!/^[0-9]{2,10}$/.test(numbers)) {
+        return 'CUI-ul trebuie să aibă formatul RO urmând cu 2-10 cifre';
+      }
+    } else {
+      // For non-TVA payers, CUI can be with or without RO
+      if (cleanCui.startsWith('RO')) {
+        const numbers = cleanCui.substring(2);
+        if (!/^[0-9]{2,10}$/.test(numbers)) {
+          return 'CUI-ul trebuie să aibă formatul RO urmând cu 2-10 cifre';
+        }
+      } else {
+        if (!/^[0-9]{2,10}$/.test(cleanCui)) {
+          return 'CUI-ul trebuie să conțină doar cifre (2-10 cifre)';
+        }
+      }
     }
-  ]);
+    return null;
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone || phone.trim() === '') return null;
+    
+    const cleanPhone = phone.replace(/\s+/g, '');
+    if (!/^\+[1-9][0-9]{1,14}$/.test(cleanPhone)) {
+      return 'Numărul de telefon nu este valid';
+    }
+    return null;
+  };
+
+  const validateEmail = (email) => {
+    if (!email || email.trim() === '') return null;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return 'Email-ul nu este valid';
+    }
+    return null;
+  };
+
+  const validateCodPostal = (codPostal) => {
+    if (!codPostal || codPostal.trim() === '') return null;
+    
+    const cleanCod = codPostal.trim();
+    if (!/^[0-9]{4,6}$/.test(cleanCod)) {
+      return 'Codul poștal trebuie să conțină între 4-6 cifre';
+    }
+    return null;
+  };
+
+  const validateCNP = (cnp) => {
+    if (!cnp || cnp.trim() === '') return null;
+    
+    const cleanCnp = cnp.trim();
+    if (!/^[0-9]{13}$/.test(cleanCnp)) {
+      return 'CNP-ul trebuie să conțină exact 13 cifre';
+    }
+    return null;
+  };
+
+  const validateWebsite = (website) => {
+    if (!website || website.trim() === '') return null;
+    
+    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    if (!urlRegex.test(website.trim())) {
+      return 'Website-ul nu este valid';
+    }
+    return null;
+  };
+
+  // Clean and format phone number with country prefix
+  const formatPhoneNumber = (phone, countryPrefix) => {
+    if (!phone) return '';
+    
+    const cleanPhone = phone.replace(/\s+/g, '').replace(/[^\d+]/g, '');
+    
+    if (cleanPhone.startsWith(countryPrefix)) {
+      return cleanPhone;
+    }
+    
+    if (cleanPhone.startsWith('+')) {
+      return cleanPhone;
+    }
+    
+    if (cleanPhone.startsWith('0')) {
+      return countryPrefix + cleanPhone.substring(1);
+    }
+    
+    return countryPrefix + cleanPhone;
+  };
 
   const handleInputChange = (field, value) => {
+    let processedValue = value;
+    let newErrors = { ...validationErrors };
+
+    // Clean and process value based on field type
+    if (typeof value === 'string') {
+      processedValue = value.trimStart(); // Remove leading spaces but allow trailing for UX
+    }
+
+    // Special handling for phone number
+    if (field === 'telefon') {
+      processedValue = formatPhoneNumber(value, selectedCountry.prefix);
+      const phoneError = validatePhone(processedValue);
+      if (phoneError) {
+        newErrors.telefon = phoneError;
+      } else {
+        delete newErrors.telefon;
+      }
+    }
+
+    // Real-time validation
+    switch (field) {
+      case 'cui':
+        const cuiError = validateCUI(processedValue, formData.platitorTVA);
+        if (cuiError) {
+          newErrors.cui = cuiError;
+        } else {
+          delete newErrors.cui;
+        }
+        break;
+        
+      case 'email':
+        const emailError = validateEmail(processedValue);
+        if (emailError) {
+          newErrors.email = emailError;
+        } else {
+          delete newErrors.email;
+        }
+        break;
+        
+      case 'codPostal':
+        const codError = validateCodPostal(processedValue);
+        if (codError) {
+          newErrors.codPostal = codError;
+        } else {
+          delete newErrors.codPostal;
+        }
+        break;
+        
+      case 'cnpReprezentant':
+        const cnpError = validateCNP(processedValue);
+        if (cnpError) {
+          newErrors.cnpReprezentant = cnpError;
+        } else {
+          delete newErrors.cnpReprezentant;
+        }
+        break;
+        
+      case 'website':
+        const websiteError = validateWebsite(processedValue);
+        if (websiteError) {
+          newErrors.website = websiteError;
+        } else {
+          delete newErrors.website;
+        }
+        break;
+        
+      case 'platitorTVA':
+        // Re-validate CUI when TVA status changes
+        const cuiErrorTVA = validateCUI(formData.cui, processedValue);
+        if (cuiErrorTVA) {
+          newErrors.cui = cuiErrorTVA;
+        } else {
+          delete newErrors.cui;
+        }
+        break;
+    }
+
+    setValidationErrors(newErrors);
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
   };
 
-  const handleSave = () => {
-    // Simulate save operation
-    setIsEditing(false);
-    setNotifications(prev => prev.map(notif => 
-      notif.id === 1 ? { ...notif, show: true } : notif
-    ));
+  const handleCountryChange = (country) => {
+    setSelectedCountry(country);
+    // Update phone number with new country prefix
+    if (formData.telefon) {
+      const newPhone = formatPhoneNumber(formData.telefon, country.prefix);
+      handleInputChange('telefon', newPhone);
+    }
+  };
+
+  const showNotification = (type, message) => {
+    const newNotification = {
+      id: Date.now(),
+      type,
+      message,
+      show: true
+    };
     
-    // Hide notification after 3 seconds
+    setNotifications(prev => [...prev, newNotification]);
+    
     setTimeout(() => {
-      setNotifications(prev => prev.map(notif => 
-        notif.id === 1 ? { ...notif, show: false } : notif
-      ));
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === newNotification.id 
+            ? { ...notif, show: false }
+            : notif
+        )
+      );
     }, 3000);
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Check for validation errors before saving
+      if (Object.keys(validationErrors).length > 0) {
+        showNotification("error", "Vă rugăm să corectați erorile de validare înainte de salvare");
+        return;
+      }
+
+      // Clean and prepare data
+      const cleanValue = (value) => {
+        if (typeof value === 'string') {
+          const cleaned = value.trim();
+          return cleaned === '' ? undefined : cleaned;
+        }
+        return value;
+      };
+
+      // Map frontend form data to backend structure with cleaning
+      const companyUpdateData = {
+        nume_firma: cleanValue(formData.numeFirma),
+        cui: cleanValue(formData.cui),
+        nr_reg_comert: cleanValue(formData.nrRegComert),
+        adresa_sediu: cleanValue(formData.adresaSediu),
+        oras: cleanValue(formData.oras),
+        judet: cleanValue(formData.judet),
+        cod_postal: cleanValue(formData.codPostal),
+        tara: cleanValue(formData.tara),
+        telefon: cleanValue(formData.telefon),
+        email: cleanValue(formData.email),
+        website: cleanValue(formData.website),
+        capital_social: formData.capitalSocial && formData.capitalSocial.trim() !== '' ? parseFloat(formData.capitalSocial) : undefined,
+        cont_bancar: cleanValue(formData.contBancar),
+        banca: cleanValue(formData.banca),
+        platitor_tva: Boolean(formData.platitorTVA),
+        reprezentant_legal: cleanValue(formData.reprezentantLegal),
+        functie_reprezentant: cleanValue(formData.functieReprezentant),
+        cnp_reprezentant: cleanValue(formData.cnpReprezentant),
+        an_fiscal: cleanValue(formData.anFiscal),
+        moneda_principala: cleanValue(formData.monedaPrincipala),
+        limba_implicita: cleanValue(formData.limbaImplicita),
+        timp_zona: cleanValue(formData.timpZona)
+      };
+
+      // Remove undefined and empty values
+      Object.keys(companyUpdateData).forEach(key => {
+        if (companyUpdateData[key] === undefined || companyUpdateData[key] === null || companyUpdateData[key] === '') {
+          delete companyUpdateData[key];
+        }
+      });
+      
+      console.log('Sending company data:', companyUpdateData);
+      await UserService.updateCompanyData(companyUpdateData);
+      
+      setIsEditing(false);
+      showNotification("success", "Datele companiei au fost actualizate cu succes");
+    } catch (error) {
+      console.error('Error saving company data:', error);
+      
+      // Handle validation errors with specific details
+      if (error.message === 'Validation failed') {
+        // Try to get more details from the API response
+        showNotification("error", "Validare eșuată. Verificați formatul datelor introduse (CUI: RO + cifre, Cod poștal: 6 cifre, CNP: 13 cifre)");
+      } else {
+        showNotification("error", error.message || "Eroare la salvarea datelor companiei");
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const copyToClipboard = (text) => {
@@ -127,6 +468,17 @@ const DateFirma = () => {
       color: "from-orange-500 to-orange-600" 
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Se încarcă datele companiei...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -161,10 +513,19 @@ const DateFirma = () => {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="inline-flex items-center px-4 py-2 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all duration-200"
+                  disabled={isSaving}
+                  className={`inline-flex items-center px-4 py-2 rounded-xl shadow-lg transition-all duration-200 ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40"
+                  }`}
                 >
-                  <Save className="w-5 h-5 mr-2" />
-                  Salvează
+                  {isSaving ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  ) : (
+                    <Save className="w-5 h-5 mr-2" />
+                  )}
+                  {isSaving ? "Se salvează..." : "Salvează"}
                 </button>
               </div>
             )}
@@ -175,10 +536,20 @@ const DateFirma = () => {
       {/* Notifications */}
       {notifications.map(notification => (
         notification.show && (
-          <div key={notification.id} className="bg-green-50 border border-green-200 rounded-lg p-4 mx-4 sm:mx-6 lg:mx-8 mt-4">
+          <div key={notification.id} className={`p-4 mx-4 sm:mx-6 lg:mx-8 mt-4 rounded-lg border ${
+            notification.type === "success" 
+              ? "bg-green-50 border-green-200" 
+              : "bg-red-50 border-red-200"
+          }`}>
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-              <p className="text-green-800">{notification.message}</p>
+              {notification.type === "success" ? (
+                <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-red-600 mr-3" />
+              )}
+              <p className={notification.type === "success" ? "text-green-800" : "text-red-800"}>
+                {notification.message}
+              </p>
             </div>
           </div>
         )
@@ -278,22 +649,32 @@ const DateFirma = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       CUI
                     </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={formData.cui}
-                        onChange={(e) => handleInputChange("cui", e.target.value)}
-                        disabled={!isEditing}
-                        className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          !isEditing ? "bg-gray-50 text-gray-600" : ""
-                        }`}
-                      />
-                      <button
-                        onClick={() => copyToClipboard(formData.cui)}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
-                      >
-                        <Copy className="w-4 h-4 text-gray-500" />
-                      </button>
+                    <div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={formData.cui}
+                          onChange={(e) => handleInputChange("cui", e.target.value)}
+                          disabled={!isEditing}
+                          placeholder={formData.platitorTVA ? "RO12345678" : "12345678 sau RO12345678"}
+                          className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 ${
+                            !isEditing ? "bg-gray-50 text-gray-600 border-gray-200" : 
+                            validationErrors.cui ? "border-red-300 focus:ring-red-500" : "border-gray-200 focus:ring-blue-500"
+                          }`}
+                        />
+                        <button
+                          onClick={() => copyToClipboard(formData.cui)}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
+                        >
+                          <Copy className="w-4 h-4 text-gray-500" />
+                        </button>
+                      </div>
+                      {validationErrors.cui && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.cui}</p>
+                      )}
+                      {!validationErrors.cui && formData.platitorTVA && (
+                        <p className="mt-1 text-sm text-blue-600">Pentru plătitorii de TVA, CUI-ul trebuie să înceapă cu RO</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -361,15 +742,22 @@ const DateFirma = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Cod Poștal
                     </label>
-                    <input
-                      type="text"
-                      value={formData.codPostal}
-                      onChange={(e) => handleInputChange("codPostal", e.target.value)}
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        !isEditing ? "bg-gray-50 text-gray-600" : ""
-                      }`}
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.codPostal}
+                        onChange={(e) => handleInputChange("codPostal", e.target.value)}
+                        disabled={!isEditing}
+                        placeholder="012345"
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          !isEditing ? "bg-gray-50 text-gray-600 border-gray-200" : 
+                          validationErrors.codPostal ? "border-red-300 focus:ring-red-500" : "border-gray-200 focus:ring-blue-500"
+                        }`}
+                      />
+                      {validationErrors.codPostal && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.codPostal}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -378,29 +766,82 @@ const DateFirma = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Telefon
                     </label>
-                    <input
-                      type="text"
-                      value={formData.telefon}
-                      onChange={(e) => handleInputChange("telefon", e.target.value)}
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        !isEditing ? "bg-gray-50 text-gray-600" : ""
-                      }`}
-                    />
+                    <div className="flex gap-2">
+                      {isEditing ? (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                            className="flex items-center px-3 py-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <span className="mr-1">{selectedCountry.flag}</span>
+                            <span className="text-sm">{selectedCountry.prefix}</span>
+                            <ChevronDown className="w-4 h-4 ml-1" />
+                          </button>
+                          {showCountryDropdown && (
+                            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                              {countries.map((country) => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  onClick={() => {
+                                    handleCountryChange(country);
+                                    setShowCountryDropdown(false);
+                                  }}
+                                  className="w-full flex items-center px-3 py-2 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                                >
+                                  <span className="mr-2">{country.flag}</span>
+                                  <span className="flex-1">{country.name}</span>
+                                  <span className="text-sm text-gray-500">{country.prefix}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center px-3 py-2 border border-gray-200 rounded-lg bg-gray-50">
+                          <span className="mr-1">{selectedCountry.flag}</span>
+                          <span className="text-sm text-gray-600">{selectedCountry.prefix}</span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={formData.telefon}
+                          onChange={(e) => handleInputChange("telefon", e.target.value)}
+                          disabled={!isEditing}
+                          placeholder="123456789"
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            !isEditing ? "bg-gray-50 text-gray-600 border-gray-200" : 
+                            validationErrors.telefon ? "border-red-300 focus:ring-red-500" : "border-gray-200"
+                          }`}
+                        />
+                        {validationErrors.telefon && (
+                          <p className="mt-1 text-sm text-red-600">{validationErrors.telefon}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Email
                     </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        !isEditing ? "bg-gray-50 text-gray-600" : ""
-                      }`}
-                    />
+                    <div>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        disabled={!isEditing}
+                        placeholder="contact@companie.ro"
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          !isEditing ? "bg-gray-50 text-gray-600 border-gray-200" : 
+                          validationErrors.email ? "border-red-300 focus:ring-red-500" : "border-gray-200 focus:ring-blue-500"
+                        }`}
+                      />
+                      {validationErrors.email && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthService } from "../../../config/api";
 import {
   User,
   Mail,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Pas 1 - Date personale
@@ -130,15 +132,34 @@ const Register = () => {
     setErrors({});
     
     try {
-      // Simulare înregistrare
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare data for backend (backend expects email, password, nume, companyData)
+      const registrationData = {
+        email: formData.email,
+        password: formData.password,
+        nume: `${formData.firstName} ${formData.lastName}`,
+        userType: 'user', // Default user type
+        companyData: {
+          companyName: formData.companyName,
+          cui: formData.cui,
+          address: formData.address,
+          city: formData.city,
+          county: formData.county,
+          phone: formData.phone,
+          email: formData.email // Use user's email as company email
+        }
+      };
       
-      console.log('Registration successful:', formData);
-      // Redirect după înregistrare cu succes
-      // window.location.href = '/dashboard';
+      const response = await AuthService.register(registrationData);
+      
+      console.log('Registration successful:', response);
+      
+      // Show success message and redirect to login
+      alert('Cont creat cu succes! Contul va fi activat după plată. Vă rugăm să vă conectați.');
+      navigate('/login');
       
     } catch (error) {
-      setErrors({ general: 'Eroare la înregistrare. Te rugăm să încerci din nou.' });
+      console.error('Registration error:', error);
+      setErrors({ general: error.message || 'Eroare la înregistrare. Te rugăm să încerci din nou.' });
     } finally {
       setIsLoading(false);
     }

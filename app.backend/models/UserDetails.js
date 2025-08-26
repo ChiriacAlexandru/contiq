@@ -43,7 +43,8 @@ class UserDetails {
       compact_mode, notifications_email, notifications_push, notifications_sms 
     } = data;
 
-    const [updated] = await sql`
+    // First try to update existing record
+    let [updated] = await sql`
       UPDATE user_details 
       SET 
         nume = COALESCE(${nume}, nume),
@@ -62,12 +63,32 @@ class UserDetails {
         sounds = COALESCE(${sounds}, sounds),
         animations = COALESCE(${animations}, animations),
         compact_mode = COALESCE(${compact_mode}, compact_mode),
-        notifications_email = COALESCE(${JSON.stringify(notifications_email)}, notifications_email),
-        notifications_push = COALESCE(${JSON.stringify(notifications_push)}, notifications_push),
-        notifications_sms = COALESCE(${JSON.stringify(notifications_sms)}, notifications_sms)
+        notifications_email = COALESCE(${notifications_email ? JSON.stringify(notifications_email) : null}, notifications_email),
+        notifications_push = COALESCE(${notifications_push ? JSON.stringify(notifications_push) : null}, notifications_push),
+        notifications_sms = COALESCE(${notifications_sms ? JSON.stringify(notifications_sms) : null}, notifications_sms)
       WHERE user_id = ${userId}
       RETURNING *
     `;
+
+    // If no record was updated, create a new one
+    if (!updated) {
+      [updated] = await sql`
+        INSERT INTO user_details (
+          user_id, nume, telefon, pozitie, companie, locatie, bio, website, linkedin,
+          tema, limba, timezone, date_format, currency, sounds, animations, compact_mode,
+          notifications_email, notifications_push, notifications_sms
+        ) VALUES (
+          ${userId}, ${nume}, ${telefon}, ${pozitie}, ${companie}, ${locatie}, ${bio}, ${website}, ${linkedin},
+          ${tema || 'light'}, ${limba || 'ro'}, ${timezone || 'Europe/Bucharest'}, 
+          ${date_format || 'dd/MM/yyyy'}, ${currency || 'RON'}, ${sounds !== undefined ? sounds : true}, 
+          ${animations !== undefined ? animations : true}, ${compact_mode !== undefined ? compact_mode : false},
+          ${notifications_email ? JSON.stringify(notifications_email) : null},
+          ${notifications_push ? JSON.stringify(notifications_push) : null},
+          ${notifications_sms ? JSON.stringify(notifications_sms) : null}
+        )
+        RETURNING *
+      `;
+    }
 
     return updated;
   }
@@ -77,6 +98,41 @@ class UserDetails {
       SELECT * FROM user_details WHERE user_id = ${userId}
     `;
     return details;
+  }
+
+  static async createOrUpdate(userId, data) {
+    // Check if record exists
+    const existing = await this.findByUserId(userId);
+    
+    if (existing) {
+      return await this.update(userId, data);
+    } else {
+      // Create new record with default values
+      const { 
+        nume, telefon, pozitie, companie, locatie, bio, website, linkedin,
+        tema, limba, timezone, date_format, currency, sounds, animations, 
+        compact_mode, notifications_email, notifications_push, notifications_sms 
+      } = data;
+
+      const [created] = await sql`
+        INSERT INTO user_details (
+          user_id, nume, telefon, pozitie, companie, locatie, bio, website, linkedin,
+          tema, limba, timezone, date_format, currency, sounds, animations, compact_mode,
+          notifications_email, notifications_push, notifications_sms
+        ) VALUES (
+          ${userId}, ${nume}, ${telefon}, ${pozitie}, ${companie}, ${locatie}, ${bio}, ${website}, ${linkedin},
+          ${tema || 'light'}, ${limba || 'ro'}, ${timezone || 'Europe/Bucharest'}, 
+          ${date_format || 'dd/MM/yyyy'}, ${currency || 'RON'}, ${sounds !== undefined ? sounds : true}, 
+          ${animations !== undefined ? animations : true}, ${compact_mode !== undefined ? compact_mode : false},
+          ${notifications_email ? JSON.stringify(notifications_email) : null},
+          ${notifications_push ? JSON.stringify(notifications_push) : null},
+          ${notifications_sms ? JSON.stringify(notifications_sms) : null}
+        )
+        RETURNING *
+      `;
+      
+      return created;
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AuthService } from "../../config/api";
 import {
   Home,
   FileText,
@@ -26,6 +27,7 @@ import {
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState(["Contracte"]);
@@ -68,6 +70,13 @@ const Sidebar = () => {
 
   const isActiveRoute = (path) => {
     return location.pathname === path;
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Ești sigur că vrei să te deconectezi?')) {
+      AuthService.logout();
+      navigate('/login');
+    }
   };
 
   const getPageTitle = () => {
@@ -438,7 +447,10 @@ const Sidebar = () => {
                   }`} />
                   Setări cont
                 </Link>
-                <button className="flex items-center w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group">
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group"
+                >
                   <LogOut className="w-4 h-4 mr-3 text-red-400 group-hover:text-red-600" />
                   Deconectare
                 </button>
@@ -449,7 +461,11 @@ const Sidebar = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-lg shadow-purple-500/30">
                 CA
               </div>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200">
+              <button 
+                onClick={handleLogout}
+                className="p-2 hover:bg-red-50 rounded-lg transition-all duration-200"
+                title="Deconectare"
+              >
                 <LogOut className="w-4 h-4 text-red-500" />
               </button>
             </div>

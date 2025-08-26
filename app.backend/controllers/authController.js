@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const CompanyData = require('../models/CompanyData');
 
 const hashPassword = async (password) => {
   const saltRounds = 12;
@@ -24,7 +25,13 @@ const generateToken = (userId, userType) => {
 
 const register = async (req, res) => {
   try {
-    const { email, password, nume, userType = 'user' } = req.body;
+    const { 
+      email, 
+      password, 
+      nume, 
+      userType = 'user',
+      companyData
+    } = req.body;
 
     if (!email || !password || !nume) {
       return res.status(400).json({ error: 'Email, password și nume sunt obligatorii' });
@@ -37,6 +44,29 @@ const register = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
     const user = await User.create(email, hashedPassword, nume, userType);
+
+    // Save company data if provided
+    if (companyData && Object.keys(companyData).length > 0) {
+      try {
+        await CompanyData.createOrUpdate(user.id, {
+          nume_firma: companyData.companyName,
+          cui: companyData.cui,
+          adresa_sediu: companyData.address,
+          oras: companyData.city,
+          judet: companyData.county,
+          telefon: companyData.phone,
+          email: companyData.email || email, // Use company email if provided, otherwise user email
+          tara: 'România', // Default to Romania
+          moneda_principala: 'RON',
+          limba_implicita: 'RO',
+          timp_zona: 'Europe/Bucharest'
+        });
+        console.log('Company data saved successfully for user:', user.id);
+      } catch (companyError) {
+        console.error('Error saving company data:', companyError);
+        // Continue with user creation even if company data fails
+      }
+    }
 
     res.status(201).json({
       message: 'Utilizator creat cu succes. Contul va fi activat după plată.',

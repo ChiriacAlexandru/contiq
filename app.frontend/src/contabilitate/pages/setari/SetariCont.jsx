@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { UserService, AuthService } from "../../../config/api";
 import {
   User,
   Mail,
@@ -41,6 +42,8 @@ import {
 const SetariCont = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -48,16 +51,53 @@ const SetariCont = () => {
   });
   
   const [profileData, setProfileData] = useState({
-    nume: "Chiriac Alexandru",
-    email: "chiriac1910@gmail.com",
-    telefon: "+40 721 123 456",
-    pozitie: "Administrator Sistem",
-    companie: "SC ContIQ Solutions SRL",
-    locatie: "București, România",
-    bio: "Administrator sistem cu experiență în dezvoltarea și implementarea soluțiilor de management pentru companii.",
-    website: "www.contiq.ro",
-    linkedin: "linkedin.com/in/chiriac-alexandru"
+    nume: "",
+    email: "",
+    telefon: "",
+    pozitie: "",
+    companie: "",
+    locatie: "",
+    bio: "",
+    website: "",
+    linkedin: ""
   });
+
+  const [validationErrors, setValidationErrors] = useState({});
+  const [selectedCountry, setSelectedCountry] = useState({ code: 'RO', prefix: '+40', flag: '🇷🇴' });
+
+  const countries = [
+    { code: 'RO', name: 'România', prefix: '+40', flag: '🇷🇴' },
+    { code: 'US', name: 'United States', prefix: '+1', flag: '🇺🇸' },
+    { code: 'GB', name: 'United Kingdom', prefix: '+44', flag: '🇬🇧' },
+    { code: 'DE', name: 'Germany', prefix: '+49', flag: '🇩🇪' },
+    { code: 'FR', name: 'France', prefix: '+33', flag: '🇫🇷' },
+    { code: 'IT', name: 'Italy', prefix: '+39', flag: '🇮🇹' },
+    { code: 'ES', name: 'Spain', prefix: '+34', flag: '🇪🇸' },
+    { code: 'NL', name: 'Netherlands', prefix: '+31', flag: '🇳🇱' },
+    { code: 'BE', name: 'Belgium', prefix: '+32', flag: '🇧🇪' },
+    { code: 'AT', name: 'Austria', prefix: '+43', flag: '🇦🇹' },
+    { code: 'CH', name: 'Switzerland', prefix: '+41', flag: '🇨🇭' },
+    { code: 'SE', name: 'Sweden', prefix: '+46', flag: '🇸🇪' },
+    { code: 'NO', name: 'Norway', prefix: '+47', flag: '🇳🇴' },
+    { code: 'DK', name: 'Denmark', prefix: '+45', flag: '🇩🇰' },
+    { code: 'FI', name: 'Finland', prefix: '+358', flag: '🇫🇮' },
+    { code: 'PT', name: 'Portugal', prefix: '+351', flag: '🇵🇹' },
+    { code: 'GR', name: 'Greece', prefix: '+30', flag: '🇬🇷' },
+    { code: 'PL', name: 'Poland', prefix: '+48', flag: '🇵🇱' },
+    { code: 'CZ', name: 'Czech Republic', prefix: '+420', flag: '🇨🇿' },
+    { code: 'HU', name: 'Hungary', prefix: '+36', flag: '🇭🇺' },
+    { code: 'BG', name: 'Bulgaria', prefix: '+359', flag: '🇧🇬' },
+    { code: 'HR', name: 'Croatia', prefix: '+385', flag: '🇭🇷' },
+    { code: 'SI', name: 'Slovenia', prefix: '+386', flag: '🇸🇮' },
+    { code: 'SK', name: 'Slovakia', prefix: '+421', flag: '🇸🇰' },
+    { code: 'LT', name: 'Lithuania', prefix: '+370', flag: '🇱🇹' },
+    { code: 'LV', name: 'Latvia', prefix: '+371', flag: '🇱🇻' },
+    { code: 'EE', name: 'Estonia', prefix: '+372', flag: '🇪🇪' },
+    { code: 'IE', name: 'Ireland', prefix: '+353', flag: '🇮🇪' },
+    { code: 'LU', name: 'Luxembourg', prefix: '+352', flag: '🇱🇺' },
+    { code: 'MT', name: 'Malta', prefix: '+356', flag: '🇲🇹' },
+    { code: 'CY', name: 'Cyprus', prefix: '+357', flag: '🇨🇾' }
+  ];
 
   const [notificationSettings, setNotificationSettings] = useState({
     email: {
@@ -105,10 +145,149 @@ const SetariCont = () => {
 
   const [notifications, setNotifications] = useState([]);
 
+  // Load user data on component mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setIsLoading(true);
+        const profile = await UserService.getProfile();
+        
+        if (profile && profile.profile) {
+          const userData = profile.profile;
+          
+          // Map backend data to frontend form structure
+          setProfileData(prev => ({
+            ...prev,
+            nume: userData.nume || "",
+            email: userData.email || "",
+            telefon: userData.telefon || "",
+            pozitie: userData.pozitie || "", // This might not exist in current schema
+            companie: userData.nume_firma || "", // Use company name from company_data
+            locatie: `${userData.oras || ""}, ${userData.judet || ""}`.replace(/^,\s*|,\s*$/g, ''), // Combine city and county
+            bio: userData.bio || "", // This might not exist in current schema
+            website: userData.website || "",
+            linkedin: userData.linkedin || "" // This might not exist in current schema
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        showNotification("error", "Eroare la încărcarea datelor utilizatorului");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, []);
+
+  const showNotification = (type, message) => {
+    const newNotification = {
+      id: Date.now(),
+      type,
+      message,
+      show: true
+    };
+    
+    setNotifications(prev => [...prev, newNotification]);
+    
+    setTimeout(() => {
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === newNotification.id 
+            ? { ...notif, show: false }
+            : notif
+        )
+      );
+    }, 3000);
+  };
+
+  // Validation functions
+  const validateEmail = (email) => {
+    if (!email) return '';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email) ? '' : 'Email-ul nu are un format valid';
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return '';
+    const cleanPhone = phone.replace(/\s+/g, '');
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    return phoneRegex.test(cleanPhone) ? '' : 'Numărul de telefon nu este valid';
+  };
+
+  const validateWebsite = (url) => {
+    if (!url) return '';
+    try {
+      new URL(url.startsWith('http') ? url : `https://${url}`);
+      return '';
+    } catch {
+      return 'URL-ul nu este valid';
+    }
+  };
+
+  const validateName = (name) => {
+    if (!name) return 'Numele este obligatoriu';
+    if (name.length < 2) return 'Numele trebuie să aibă minim 2 caractere';
+    if (name.length > 100) return 'Numele trebuie să aibă maxim 100 caractere';
+    const nameRegex = /^[a-zA-ZăâîșțĂÂÎȘȚ\s\-\.]+$/;
+    return nameRegex.test(name) ? '' : 'Numele poate conține doar litere, spații, cratime și puncte';
+  };
+
+  // Clean function to remove blank spaces and empty fields
+  const cleanValue = (value) => {
+    if (typeof value === 'string') {
+      const cleaned = value.trim();
+      return cleaned === '' ? undefined : cleaned;
+    }
+    return value;
+  };
+
+  // Handle country change for phone validation
+  const handleCountryChange = (country) => {
+    setSelectedCountry(country);
+    
+    // Update phone number with new prefix if current phone doesn't have a prefix
+    const currentPhone = profileData.telefon || '';
+    if (currentPhone && !currentPhone.startsWith('+')) {
+      const newPhone = `${country.prefix}${currentPhone}`;
+      setProfileData(prev => ({ ...prev, telefon: newPhone }));
+      setValidationErrors(prev => ({ ...prev, telefon: validatePhone(newPhone) }));
+    }
+  };
+
   const handleInputChange = (section, field, value) => {
     switch (section) {
       case "profile":
         setProfileData(prev => ({ ...prev, [field]: value }));
+        
+        // Real-time validation
+        let error = '';
+        switch (field) {
+          case 'nume':
+            error = validateName(value);
+            break;
+          case 'email':
+            error = validateEmail(value);
+            break;
+          case 'telefon':
+            // Auto-add country prefix if not present
+            if (value && !value.startsWith('+')) {
+              const newValue = `${selectedCountry.prefix}${value}`;
+              setProfileData(prev => ({ ...prev, [field]: newValue }));
+              error = validatePhone(newValue);
+            } else {
+              error = validatePhone(value);
+            }
+            break;
+          case 'website':
+            error = validateWebsite(value);
+            break;
+          case 'linkedin':
+            error = validateWebsite(value);
+            break;
+        }
+        
+        setValidationErrors(prev => ({ ...prev, [field]: error }));
         break;
       case "notifications":
         setNotificationSettings(prev => ({
@@ -131,31 +310,48 @@ const SetariCont = () => {
     }
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Simulate success notification
-    showNotification("success", "Setările au fost salvate cu succes");
-  };
-
-  const showNotification = (type, message) => {
-    const newNotification = {
-      id: Date.now(),
-      type,
-      message,
-      show: true
-    };
-    
-    setNotifications(prev => [...prev, newNotification]);
-    
-    setTimeout(() => {
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === newNotification.id 
-            ? { ...notif, show: false }
-            : notif
-        )
-      );
-    }, 3000);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Check for validation errors
+      const hasErrors = Object.values(validationErrors).some(error => error !== '');
+      if (hasErrors) {
+        showNotification("error", "Corectează erorile de validare înainte de salvare");
+        return;
+      }
+      
+      // Clean data before sending
+      const cleanedData = {};
+      Object.keys(profileData).forEach(key => {
+        const cleanedValue = cleanValue(profileData[key]);
+        if (cleanedValue !== undefined) {
+          cleanedData[key] = cleanedValue;
+        }
+      });
+      
+      // For now, we'll only save basic profile information
+      // Extended fields like bio, pozitie, linkedin might need backend schema updates
+      const userUpdateData = {
+        nume: cleanedData.nume,
+        telefon: cleanedData.telefon,
+        website: cleanedData.website,
+        pozitie: cleanedData.pozitie,
+        bio: cleanedData.bio,
+        linkedin: cleanedData.linkedin
+        // email updates might need separate endpoint for security reasons
+      };
+      
+      await UserService.updateUserDetails(userUpdateData);
+      
+      setIsEditing(false);
+      showNotification("success", "Setările au fost salvate cu succes");
+    } catch (error) {
+      console.error('Error saving user data:', error);
+      showNotification("error", error.message || "Eroare la salvarea setărilor");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const togglePasswordVisibility = (field) => {
@@ -196,6 +392,17 @@ const SetariCont = () => {
     { action: "Login reușit", device: "iPhone", time: "Acum 1 săptămână", ip: "10.0.0.1" }
   ];
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+          <p className="text-gray-600">Se încarcă datele contului...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50/50">
       {/* Header */}
@@ -229,10 +436,19 @@ const SetariCont = () => {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="inline-flex items-center px-4 py-2 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all duration-200"
+                  disabled={isSaving}
+                  className={`inline-flex items-center px-4 py-2 rounded-xl shadow-lg transition-all duration-200 ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40"
+                  }`}
                 >
-                  <Save className="w-5 h-5 mr-2" />
-                  Salvează
+                  {isSaving ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  ) : (
+                    <Save className="w-5 h-5 mr-2" />
+                  )}
+                  {isSaving ? "Se salvează..." : "Salvează"}
                 </button>
               </div>
             )}
@@ -335,17 +551,24 @@ const SetariCont = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nume Complet
+                        Nume Complet *
                       </label>
                       <input
                         type="text"
                         value={profileData.nume}
                         onChange={(e) => handleInputChange("profile", "nume", e.target.value)}
                         disabled={!isEditing}
-                        className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          !isEditing ? "bg-gray-50 text-gray-600" : ""
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          !isEditing 
+                            ? "bg-gray-50 text-gray-600 border-gray-200" 
+                            : validationErrors.nume 
+                              ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+                              : "border-gray-200"
                         }`}
                       />
+                      {validationErrors.nume && isEditing && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.nume}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -356,10 +579,17 @@ const SetariCont = () => {
                         value={profileData.email}
                         onChange={(e) => handleInputChange("profile", "email", e.target.value)}
                         disabled={!isEditing}
-                        className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          !isEditing ? "bg-gray-50 text-gray-600" : ""
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          !isEditing 
+                            ? "bg-gray-50 text-gray-600 border-gray-200" 
+                            : validationErrors.email 
+                              ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+                              : "border-gray-200"
                         }`}
                       />
+                      {validationErrors.email && isEditing && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                      )}
                     </div>
                   </div>
 
@@ -368,15 +598,46 @@ const SetariCont = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Telefon
                       </label>
-                      <input
-                        type="tel"
-                        value={profileData.telefon}
-                        onChange={(e) => handleInputChange("profile", "telefon", e.target.value)}
-                        disabled={!isEditing}
-                        className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          !isEditing ? "bg-gray-50 text-gray-600" : ""
-                        }`}
-                      />
+                      <div className="flex gap-2">
+                        {isEditing && (
+                          <select
+                            value={selectedCountry.code}
+                            onChange={(e) => {
+                              const country = countries.find(c => c.code === e.target.value);
+                              handleCountryChange(country);
+                            }}
+                            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[120px]"
+                          >
+                            {countries.map(country => (
+                              <option key={country.code} value={country.code}>
+                                {country.flag} {country.prefix}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        <input
+                          type="tel"
+                          value={profileData.telefon}
+                          onChange={(e) => handleInputChange("profile", "telefon", e.target.value)}
+                          disabled={!isEditing}
+                          placeholder={isEditing ? `${selectedCountry.prefix}123456789` : ''}
+                          className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            !isEditing 
+                              ? "bg-gray-50 text-gray-600 border-gray-200" 
+                              : validationErrors.telefon 
+                                ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+                                : "border-gray-200"
+                          }`}
+                        />
+                      </div>
+                      {validationErrors.telefon && isEditing && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.telefon}</p>
+                      )}
+                      {isEditing && (
+                        <p className="text-gray-500 text-xs mt-1">
+                          Selectează țara pentru a adăuga automat prefixul
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -449,10 +710,18 @@ const SetariCont = () => {
                         value={profileData.website}
                         onChange={(e) => handleInputChange("profile", "website", e.target.value)}
                         disabled={!isEditing}
-                        className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          !isEditing ? "bg-gray-50 text-gray-600" : ""
+                        placeholder={isEditing ? 'https://example.com' : ''}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          !isEditing 
+                            ? "bg-gray-50 text-gray-600 border-gray-200" 
+                            : validationErrors.website 
+                              ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+                              : "border-gray-200"
                         }`}
                       />
+                      {validationErrors.website && isEditing && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.website}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -463,10 +732,18 @@ const SetariCont = () => {
                         value={profileData.linkedin}
                         onChange={(e) => handleInputChange("profile", "linkedin", e.target.value)}
                         disabled={!isEditing}
-                        className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          !isEditing ? "bg-gray-50 text-gray-600" : ""
+                        placeholder={isEditing ? 'https://linkedin.com/in/username' : ''}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          !isEditing 
+                            ? "bg-gray-50 text-gray-600 border-gray-200" 
+                            : validationErrors.linkedin 
+                              ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+                              : "border-gray-200"
                         }`}
                       />
+                      {validationErrors.linkedin && isEditing && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.linkedin}</p>
+                      )}
                     </div>
                   </div>
                 </div>

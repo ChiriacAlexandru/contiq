@@ -55,16 +55,46 @@ const phoneSchema = Joi.string()
 
 // CUI validation schema (Romanian tax identification number)
 const cuiSchema = Joi.string()
-  .pattern(new RegExp('^RO[0-9]{2,10}$'))
-  .required()
+  .pattern(new RegExp('^(RO)?[0-9]{2,10}$'))
+  .allow('') // Allow empty strings
+  .optional()
   .messages({
-    'string.pattern.base': 'CUI-ul trebuie să aibă formatul RO urmărit de 2-10 cifre',
-    'any.required': 'CUI-ul este obligatoriu'
+    'string.pattern.base': 'CUI-ul trebuie să aibă formatul RO urmărit de 2-10 cifre (sau doar cifre)'
   });
+
+// Function to clean and trim string values recursively
+const cleanData = (obj) => {
+  if (obj === null || obj === undefined) return obj;
+  
+  if (typeof obj === 'string') {
+    const cleaned = obj.trim();
+    return cleaned === '' ? undefined : cleaned;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(cleanData);
+  }
+  
+  if (typeof obj === 'object') {
+    const cleaned = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const cleanedValue = cleanData(value);
+      if (cleanedValue !== undefined) {
+        cleaned[key] = cleanedValue;
+      }
+    }
+    return cleaned;
+  }
+  
+  return obj;
+};
 
 // Validation middleware factory
 const validate = (schema) => {
   return (req, res, next) => {
+    // Clean data before validation
+    req.body = cleanData(req.body);
+    
     const { error } = schema.validate(req.body, { 
       abortEarly: false, // Return all validation errors
       stripUnknown: true // Remove unknown fields
@@ -128,34 +158,40 @@ const userDetailsSchema = Joi.object({
 
 // Company data validation schema
 const companyDataSchema = Joi.object({
-  nume_firma: Joi.string().min(2).max(255).optional(),
-  cui: cuiSchema.optional(),
-  nr_reg_comert: Joi.string().max(100).optional(),
-  adresa_sediu: Joi.string().max(500).optional(),
-  oras: Joi.string().max(100).optional(),
-  judet: Joi.string().max(100).optional(),
-  cod_postal: Joi.string().pattern(new RegExp('^[0-9]{6}$')).optional().messages({
-    'string.pattern.base': 'Codul poștal trebuie să conțină exact 6 cifre'
+  nume_firma: Joi.string().min(2).max(255).allow('').optional(),
+  cui: cuiSchema,
+  nr_reg_comert: Joi.string().max(100).allow('').optional(),
+  adresa_sediu: Joi.string().max(500).allow('').optional(),
+  oras: Joi.string().max(100).allow('').optional(),
+  judet: Joi.string().max(100).allow('').optional(),
+  cod_postal: Joi.string().pattern(new RegExp('^[0-9]{4,6}$')).allow('').optional().messages({
+    'string.pattern.base': 'Codul poștal trebuie să conțină între 4 și 6 cifre'
   }),
-  tara: Joi.string().max(100).optional(),
-  telefon: phoneSchema,
-  email: Joi.string().email().optional(),
-  website: Joi.string().uri().optional(),
+  tara: Joi.string().max(100).allow('').optional(),
+  telefon: Joi.string().pattern(new RegExp('^\\+?[0-9\\s\\-\\(\\)]{10,15}$')).allow('').optional().messages({
+    'string.pattern.base': 'Numărul de telefon nu este valid'
+  }),
+  email: Joi.string().email().allow('').optional(),
+  website: Joi.string().uri().allow('').optional(),
   capital_social: Joi.number().min(0).optional(),
-  cont_bancar: Joi.string().pattern(new RegExp('^[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}$')).optional().messages({
-    'string.pattern.base': 'IBAN-ul nu este valid'
+  cont_bancar: Joi.string().max(34).allow('').optional().messages({
+    'string.max': 'Contul bancar trebuie să aibă maxim 34 caractere'
   }),
-  banca: Joi.string().max(255).optional(),
+  banca: Joi.string().max(255).allow('').optional(),
   platitor_tva: Joi.boolean().optional(),
-  reprezentant_legal: nameSchema.optional(),
-  functie_reprezentant: Joi.string().valid('Administrator', 'Director General', 'Manager', 'Asociat').optional(),
-  cnp_reprezentant: Joi.string().pattern(new RegExp('^[0-9]{13}$')).optional().messages({
+  reprezentant_legal: Joi.string().min(2).max(100).pattern(new RegExp('^[a-zA-ZăâîșțĂÂÎȘȚ\\s\\-\\.]*$')).allow('').optional().messages({
+    'string.min': 'Numele trebuie să aibă minim 2 caractere',
+    'string.max': 'Numele trebuie să aibă maxim 100 caractere', 
+    'string.pattern.base': 'Numele poate conține doar litere, spații, cratime și puncte'
+  }),
+  functie_reprezentant: Joi.string().valid('Administrator', 'Director General', 'Manager', 'Asociat').allow('').optional(),
+  cnp_reprezentant: Joi.string().pattern(new RegExp('^[0-9]{13}$')).allow('').optional().messages({
     'string.pattern.base': 'CNP-ul trebuie să conțină exact 13 cifre'
   }),
-  an_fiscal: Joi.string().pattern(new RegExp('^[0-9]{4}$')).optional(),
-  moneda_principala: Joi.string().valid('RON', 'EUR', 'USD').optional(),
-  limba_implicita: Joi.string().valid('RO', 'EN', 'FR').optional(),
-  timp_zona: Joi.string().max(50).optional()
+  an_fiscal: Joi.string().pattern(new RegExp('^[0-9]{4}$')).allow('').optional(),
+  moneda_principala: Joi.string().valid('RON', 'EUR', 'USD').allow('').optional(),
+  limba_implicita: Joi.string().valid('RO', 'EN', 'FR').allow('').optional(),
+  timp_zona: Joi.string().max(50).allow('').optional()
 });
 
 // Middleware functions

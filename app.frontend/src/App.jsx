@@ -1,8 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./contabilitate/components/Layout";
 import Login from "./contabilitate/pages/auth/Login";
 import Register from "./contabilitate/pages/auth/Register";
+import ActivareCont from "./contabilitate/pages/general/ActivareCont";
 import Dashboard from "./contabilitate/pages/dashboard/Dashboard";
 import DocumenteDeIesire from "./contabilitate/pages/documenteDeIesire/DocumenteDeIesire";
 import DocumenteDeIntrare from "./contabilitate/pages/documenteDeIntrare/DocumenteDeIntrare";
@@ -19,12 +21,17 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        {/* Auth Routes */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/activare-cont" element={<ActivareCont />} />
         
         {/* Protected Routes */}
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="documente-iesire" element={<DocumenteDeIesire />} />

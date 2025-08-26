@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthService } from "../../../config/api";
 import {
   Mail,
   Lock,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -69,15 +71,24 @@ const Login = () => {
     setErrors({});
     
     try {
-      // Simulare autentificare
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await AuthService.login(formData.email, formData.password);
       
-      // Redirect la dashboard după autentificare cu succes
-      console.log('Login successful:', formData);
-      // window.location.href = '/dashboard';
+      console.log('Login successful:', response);
+      
+      // Check if user is activated
+      if (!response.user.activated) {
+        setErrors({ 
+          general: 'Contul nu este activat. Vă rugăm să efectuați plata abonamentului pentru a activa contul.' 
+        });
+        return;
+      }
+      
+      // Redirect to dashboard on successful login
+      navigate('/dashboard');
       
     } catch (error) {
-      setErrors({ general: 'Eroare la autentificare. Verificați datele introduse.' });
+      console.error('Login error:', error);
+      setErrors({ general: error.message || 'Eroare la autentificare. Verificați datele introduse.' });
     } finally {
       setIsLoading(false);
     }

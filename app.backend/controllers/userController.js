@@ -19,11 +19,7 @@ const getProfile = async (req, res) => {
 
 const updateUserDetails = async (req, res) => {
   try {
-    const updated = await UserDetails.update(req.user.userId, req.body);
-
-    if (!updated) {
-      return res.status(404).json({ error: 'Detaliile utilizatorului nu au fost găsite' });
-    }
+    const updated = await UserDetails.createOrUpdate(req.user.userId, req.body);
 
     res.json({ message: 'Profil actualizat cu succes', details: updated });
   } catch (error) {
