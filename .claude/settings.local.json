@@ -10,7 +10,8 @@
       "Bash(npm run dev:*)",
       "Bash(node:*)",
       "Bash(timeout 10s npm start)",
-      "Bash(timeout 15s npm start)"
+      "Bash(timeout 15s npm start)",
+      "Bash(del \"db\\migrations\\012_create_documents.sql\")"
     ],
     "deny": [],
     "ask": []

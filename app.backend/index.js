@@ -21,6 +21,8 @@ const productsRoutes = require('./routes/products');
 const categoriesRoutes = require('./routes/categories');
 const brandsRoutes = require('./routes/brands');
 const suppliersRoutes = require('./routes/suppliers');
+const clientsRoutes = require('./routes/clients');
+const documentsRoutes = require('./routes/documents');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,6 +45,8 @@ app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/brands', brandsRoutes);
 app.use('/api/suppliers', suppliersRoutes);
+app.use('/api/clients', clientsRoutes);
+app.use('/api/documents', documentsRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ 
