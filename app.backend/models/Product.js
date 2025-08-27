@@ -200,39 +200,74 @@ class Product {
     const stoc_actual = data.stoc_actual !== undefined ? parseInt(data.stoc_actual) || 0 : currentProduct.stoc_actual || 0;
     const stoc_minim = data.stoc_minim !== undefined ? parseInt(data.stoc_minim) || 0 : currentProduct.stoc_minim || 0;
     
-    // Determine status - let the database trigger handle automatic status updates
-    // Only set status if explicitly provided, otherwise preserve current status
-    const status = data.status || currentProduct.status || 'activ';
-
-    const [product] = await sql`
-      UPDATE products 
-      SET 
-        nume = ${data.nume},
-        cod = ${data.cod},
-        descriere = ${data.descriere || null},
-        category_id = ${data.category_id || null},
-        brand_id = ${data.brand_id || null},
-        supplier_id = ${data.supplier_id || null},
-        location_id = ${data.location_id || null},
-        pret_vanzare = ${data.pret_vanzare ? parseFloat(data.pret_vanzare) : null},
-        pret_achizitie = ${data.pret_achizitie ? parseFloat(data.pret_achizitie) : null},
-        stoc_actual = ${stoc_actual},
-        stoc_minim = ${stoc_minim},
-        unitate_masura = ${data.unitate_masura || 'buc'},
-        garantie_luni = ${data.garantie_luni ? parseInt(data.garantie_luni) : null},
-        greutate = ${data.greutate ? parseFloat(data.greutate) : null},
-        dimensiuni_lungime = ${data.dimensiuni_lungime ? parseFloat(data.dimensiuni_lungime) : null},
-        dimensiuni_latime = ${data.dimensiuni_latime ? parseFloat(data.dimensiuni_latime) : null},
-        dimensiuni_inaltime = ${data.dimensiuni_inaltime ? parseFloat(data.dimensiuni_inaltime) : null},
-        cod_bare = ${data.cod_bare || null},
-        imagine_principala = ${data.imagine_principala || null},
-        conditii_pastrare = ${data.conditii_pastrare || null},
-        instructiuni_folosire = ${data.instructiuni_folosire || null},
-        status = ${status},
-        updated_at = NOW()
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    // Let the database trigger handle automatic status updates
+    // Only set status if explicitly provided and it's a manual override (inactiv)
+    const shouldSetStatus = data.status && data.status === 'inactiv';
+    
+    let updateQuery;
+    if (shouldSetStatus) {
+      updateQuery = sql`
+        UPDATE products 
+        SET 
+          nume = ${data.nume},
+          cod = ${data.cod},
+          descriere = ${data.descriere || null},
+          category_id = ${data.category_id || null},
+          brand_id = ${data.brand_id || null},
+          supplier_id = ${data.supplier_id || null},
+          location_id = ${data.location_id || null},
+          pret_vanzare = ${data.pret_vanzare ? parseFloat(data.pret_vanzare) : null},
+          pret_achizitie = ${data.pret_achizitie ? parseFloat(data.pret_achizitie) : null},
+          stoc_actual = ${stoc_actual},
+          stoc_minim = ${stoc_minim},
+          unitate_masura = ${data.unitate_masura || 'buc'},
+          garantie_luni = ${data.garantie_luni ? parseInt(data.garantie_luni) : null},
+          greutate = ${data.greutate ? parseFloat(data.greutate) : null},
+          dimensiuni_lungime = ${data.dimensiuni_lungime ? parseFloat(data.dimensiuni_lungime) : null},
+          dimensiuni_latime = ${data.dimensiuni_latime ? parseFloat(data.dimensiuni_latime) : null},
+          dimensiuni_inaltime = ${data.dimensiuni_inaltime ? parseFloat(data.dimensiuni_inaltime) : null},
+          cod_bare = ${data.cod_bare || null},
+          imagine_principala = ${data.imagine_principala || null},
+          conditii_pastrare = ${data.conditii_pastrare || null},
+          instructiuni_folosire = ${data.instructiuni_folosire || null},
+          status = ${data.status},
+          updated_at = NOW()
+        WHERE id = ${id}
+        RETURNING *
+      `;
+    } else {
+      // Don't set status, let trigger calculate it automatically
+      updateQuery = sql`
+        UPDATE products 
+        SET 
+          nume = ${data.nume},
+          cod = ${data.cod},
+          descriere = ${data.descriere || null},
+          category_id = ${data.category_id || null},
+          brand_id = ${data.brand_id || null},
+          supplier_id = ${data.supplier_id || null},
+          location_id = ${data.location_id || null},
+          pret_vanzare = ${data.pret_vanzare ? parseFloat(data.pret_vanzare) : null},
+          pret_achizitie = ${data.pret_achizitie ? parseFloat(data.pret_achizitie) : null},
+          stoc_actual = ${stoc_actual},
+          stoc_minim = ${stoc_minim},
+          unitate_masura = ${data.unitate_masura || 'buc'},
+          garantie_luni = ${data.garantie_luni ? parseInt(data.garantie_luni) : null},
+          greutate = ${data.greutate ? parseFloat(data.greutate) : null},
+          dimensiuni_lungime = ${data.dimensiuni_lungime ? parseFloat(data.dimensiuni_lungime) : null},
+          dimensiuni_latime = ${data.dimensiuni_latime ? parseFloat(data.dimensiuni_latime) : null},
+          dimensiuni_inaltime = ${data.dimensiuni_inaltime ? parseFloat(data.dimensiuni_inaltime) : null},
+          cod_bare = ${data.cod_bare || null},
+          imagine_principala = ${data.imagine_principala || null},
+          conditii_pastrare = ${data.conditii_pastrare || null},
+          instructiuni_folosire = ${data.instructiuni_folosire || null},
+          updated_at = NOW()
+        WHERE id = ${id}
+        RETURNING *
+      `;
+    }
+    
+    const [product] = await updateQuery;
     return product;
   }
 

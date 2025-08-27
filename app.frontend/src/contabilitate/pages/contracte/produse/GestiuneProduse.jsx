@@ -46,7 +46,7 @@ const GestiuneProduse = () => {
   });
   
   // UI State
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState("list");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [selectedProduse, setSelectedProduse] = useState([]);
   const [showProductModal, setShowProductModal] = useState(false);
