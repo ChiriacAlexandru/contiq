@@ -8,7 +8,7 @@ const { sql } = require('./config/database');
 const Migrator = require('./db/migrator');
 
 // Import security middleware
-const { securityHeaders, generalLimiter, corsOptions } = require('./middleware/security');
+const { securityHeaders, corsOptions } = require('./middleware/security');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Validate environment variables at startup
@@ -30,7 +30,6 @@ app.set('trust proxy', 1);
 
 // Security middleware
 app.use(securityHeaders);
-app.use(generalLimiter);
 app.use(cors(corsOptions));
 
 // Body parsing middleware with limits

@@ -30,39 +30,15 @@ const securityHeaders = helmet({
   xssFilter: true,
 });
 
-// General rate limiting
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    code: 'RATE_LIMIT_EXCEEDED'
-  },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
-// Strict rate limiting for authentication endpoints
+// Rate limiting for authentication endpoints only
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 authentication attempts per windowMs
+  max: 10, // limit each IP to 10 authentication attempts per windowMs
   message: {
-    error: 'Too many authentication attempts from this IP, please try again later.',
+    error: 'Prea multe încercări de autentificare de pe această adresă IP. Vă rugăm să încercați mai târziu.',
     code: 'AUTH_RATE_LIMIT_EXCEEDED'
   },
   skipSuccessfulRequests: true, // Don't count successful requests
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Medium rate limiting for user operations
-const userLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // limit each IP to 30 user operations per windowMs
-  message: {
-    error: 'Too many user operations from this IP, please try again later.',
-    code: 'USER_RATE_LIMIT_EXCEEDED'
-  },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -95,8 +71,6 @@ const corsOptions = {
 
 module.exports = {
   securityHeaders,
-  generalLimiter,
   authLimiter,
-  userLimiter,
   corsOptions
 };
