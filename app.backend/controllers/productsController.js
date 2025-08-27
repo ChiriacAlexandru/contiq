@@ -67,10 +67,12 @@ class ProductsController {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.error('Product create validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           error: 'Date invalide',
-          details: errors.array()
+          details: errors.array(),
+          code: 'VALIDATION_ERROR'
         });
       }
 
@@ -102,12 +104,15 @@ class ProductsController {
   // Update product
   static async updateProduct(req, res) {
     try {
+      console.log('Product update request body:', JSON.stringify(req.body, null, 2));
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.error('Product update validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           error: 'Date invalide',
-          details: errors.array()
+          details: errors.array(),
+          code: 'VALIDATION_ERROR'
         });
       }
 

@@ -190,6 +190,20 @@ class Product {
   }
 
   static async update(id, data) {
+    // Get current product to preserve status if not provided
+    const currentProduct = await this.getById(id);
+    if (!currentProduct) {
+      throw new Error('Product not found');
+    }
+
+    // Parse and validate numeric values - ensure integers, default to 0
+    const stoc_actual = data.stoc_actual !== undefined ? parseInt(data.stoc_actual) || 0 : currentProduct.stoc_actual || 0;
+    const stoc_minim = data.stoc_minim !== undefined ? parseInt(data.stoc_minim) || 0 : currentProduct.stoc_minim || 0;
+    
+    // Determine status - let the database trigger handle automatic status updates
+    // Only set status if explicitly provided, otherwise preserve current status
+    const status = data.status || currentProduct.status || 'activ';
+
     const [product] = await sql`
       UPDATE products 
       SET 
@@ -202,8 +216,8 @@ class Product {
         location_id = ${data.location_id || null},
         pret_vanzare = ${data.pret_vanzare ? parseFloat(data.pret_vanzare) : null},
         pret_achizitie = ${data.pret_achizitie ? parseFloat(data.pret_achizitie) : null},
-        stoc_actual = ${data.stoc_actual ? parseInt(data.stoc_actual) : 0},
-        stoc_minim = ${data.stoc_minim ? parseInt(data.stoc_minim) : 0},
+        stoc_actual = ${stoc_actual},
+        stoc_minim = ${stoc_minim},
         unitate_masura = ${data.unitate_masura || 'buc'},
         garantie_luni = ${data.garantie_luni ? parseInt(data.garantie_luni) : null},
         greutate = ${data.greutate ? parseFloat(data.greutate) : null},
@@ -214,7 +228,7 @@ class Product {
         imagine_principala = ${data.imagine_principala || null},
         conditii_pastrare = ${data.conditii_pastrare || null},
         instructiuni_folosire = ${data.instructiuni_folosire || null},
-        status = ${data.status || 'activ'},
+        status = ${status},
         updated_at = NOW()
       WHERE id = ${id}
       RETURNING *

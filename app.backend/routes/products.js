@@ -21,38 +21,63 @@ const productValidation = [
     .withMessage('Codul produsului trebuie să aibă între 2 și 100 caractere'),
   
   body('pret_vanzare')
-    .optional({ checkFalsy: true })
-    .isFloat({ min: 0 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      const num = parseFloat(value);
+      return !isNaN(num) && num >= 0;
+    })
     .withMessage('Prețul de vânzare trebuie să fie un număr pozitiv'),
   
   body('pret_achizitie')
-    .optional({ checkFalsy: true })
-    .isFloat({ min: 0 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      const num = parseFloat(value);
+      return !isNaN(num) && num >= 0;
+    })
     .withMessage('Prețul de achiziție trebuie să fie un număr pozitiv'),
   
   body('stoc_actual')
-    .optional({ checkFalsy: true })
-    .isInt({ min: 0 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      const num = parseInt(value);
+      return Number.isInteger(num) && num >= 0;
+    })
     .withMessage('Stocul actual trebuie să fie un număr întreg pozitiv'),
   
   body('stoc_minim')
-    .optional({ checkFalsy: true })
-    .isInt({ min: 0 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      const num = parseInt(value);
+      return Number.isInteger(num) && num >= 0;
+    })
     .withMessage('Stocul minim trebuie să fie un număr întreg pozitiv'),
   
   body('category_id')
-    .optional({ checkFalsy: true })
-    .isInt({ min: 1 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      return Number.isInteger(Number(value)) && Number(value) > 0;
+    })
     .withMessage('ID-ul categoriei trebuie să fie un număr întreg pozitiv'),
   
   body('brand_id')
-    .optional({ checkFalsy: true })
-    .isInt({ min: 1 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      return Number.isInteger(Number(value)) && Number(value) > 0;
+    })
     .withMessage('ID-ul brand-ului trebuie să fie un număr întreg pozitiv'),
   
   body('supplier_id')
-    .optional({ checkFalsy: true })
-    .isInt({ min: 1 })
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true;
+      return Number.isInteger(Number(value)) && Number(value) > 0;
+    })
     .withMessage('ID-ul furnizorului trebuie să fie un număr întreg pozitiv'),
   
   body('unitate_masura')

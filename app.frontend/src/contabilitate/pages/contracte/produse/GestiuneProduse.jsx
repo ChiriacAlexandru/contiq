@@ -247,12 +247,30 @@ const GestiuneProduse = () => {
     try {
       setIsModalLoading(true);
       
+      // Transform form data - convert empty strings to null for optional numeric fields
+      const cleanedData = {
+        ...formData,
+        category_id: formData.category_id || null,
+        brand_id: formData.brand_id || null,
+        supplier_id: formData.supplier_id || null,
+        location_id: formData.location_id || null,
+        pret_vanzare: formData.pret_vanzare || null,
+        pret_achizitie: formData.pret_achizitie || null,
+        stoc_actual: formData.stoc_actual || null,
+        stoc_minim: formData.stoc_minim || null,
+        garantie_luni: formData.garantie_luni || null,
+        greutate: formData.greutate || null,
+        dimensiuni_lungime: formData.dimensiuni_lungime || null,
+        dimensiuni_latime: formData.dimensiuni_latime || null,
+        dimensiuni_inaltime: formData.dimensiuni_inaltime || null,
+      };
+      
       if (selectedProduct) {
         // Update existing product
-        await ProductsService.updateProduct(selectedProduct.id, formData);
+        await ProductsService.updateProduct(selectedProduct.id, cleanedData);
       } else {
         // Create new product
-        await ProductsService.createProduct(formData);
+        await ProductsService.createProduct(cleanedData);
       }
       
       // Refresh products list
