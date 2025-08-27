@@ -61,11 +61,11 @@ function getConfig() {
       expiresIn: process.env.JWT_EXPIRES_IN || '24h'
     },
     server: {
-      port: parseInt(process.env.PORT),
-      allowedOrigins: process.env.ALLOWED_ORIGINS.split(',')
+      port: parseInt(process.env.PORT) || optionalEnvVars.PORT,
+      allowedOrigins: (process.env.ALLOWED_ORIGINS || optionalEnvVars.ALLOWED_ORIGINS).split(',')
     },
     app: {
-      environment: process.env.NODE_ENV
+      environment: process.env.NODE_ENV || optionalEnvVars.NODE_ENV
     }
   };
 }

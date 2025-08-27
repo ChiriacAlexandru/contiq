@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Package,
   Plus,
@@ -28,158 +28,258 @@ import {
   Activity,
   Box,
   Layers,
+  Loader2,
 } from "lucide-react";
+import { ProductsService } from "../../../../config/api";
 
 const GestiuneProduse = () => {
-  const [produse, setProduse] = useState([
-    {
-      id: 1,
-      nume: "Laptop Dell XPS 13",
-      cod: "DELL-XPS-001",
-      categorie: "Electronice",
-      brand: "Dell",
-      pret: 4999.99,
-      pretAchizitie: 4200.0,
-      stoc: 15,
-      stocMinim: 5,
-      unitate: "buc",
-      status: "activ",
-      locatie: "Depozit A",
-      furnizor: "Tech Solutions SRL",
-      dataAdaugare: "2024-01-15",
-      ultimaVanzare: "2025-08-20",
-      rating: 5,
-      vanzari: 25,
-      descriere: "Laptop performant pentru business",
-      garantie: "24 luni",
-      dimensiuni: "30.2 x 19.9 x 1.47 cm",
-      greutate: "1.2 kg",
-    },
-    {
-      id: 2,
-      nume: "iPhone 15 Pro",
-      cod: "APPLE-IP15P-001",
-      categorie: "Telefoane",
-      brand: "Apple",
-      pret: 5499.99,
-      pretAchizitie: 4800.0,
-      stoc: 8,
-      stocMinim: 3,
-      unitate: "buc",
-      status: "activ",
-      locatie: "Depozit B",
-      furnizor: "iStore Romania",
-      dataAdaugare: "2024-02-20",
-      ultimaVanzare: "2025-08-22",
-      rating: 5,
-      vanzari: 18,
-      descriere: "Smartphone premium cu cameră avansată",
-      garantie: "12 luni",
-      dimensiuni: "14.67 x 7.08 x 0.83 cm",
-      greutate: "187 g",
-    },
-    {
-      id: 3,
-      nume: "Monitor Samsung 27''",
-      cod: "SAMSUNG-M27-001",
-      categorie: "Monitoare",
-      brand: "Samsung",
-      pret: 1299.99,
-      pretAchizitie: 1050.0,
-      stoc: 2,
-      stocMinim: 5,
-      unitate: "buc",
-      status: "stoc_redus",
-      locatie: "Depozit A",
-      furnizor: "Display Tech SRL",
-      dataAdaugare: "2024-03-10",
-      ultimaVanzare: "2025-07-15",
-      rating: 4,
-      vanzari: 12,
-      descriere: "Monitor 4K pentru profesionisti",
-      garantie: "36 luni",
-      dimensiuni: "61.7 x 36.8 x 5.2 cm",
-      greutate: "4.2 kg",
-    },
-    {
-      id: 4,
-      nume: "Tastatura Mechanical RGB",
-      cod: "LOGI-MX-001",
-      categorie: "Accesorii",
-      brand: "Logitech",
-      pret: 349.99,
-      pretAchizitie: 280.0,
-      stoc: 25,
-      stocMinim: 10,
-      unitate: "buc",
-      status: "activ",
-      locatie: "Depozit C",
-      furnizor: "Gaming Gear SRL",
-      dataAdaugare: "2024-04-05",
-      ultimaVanzare: "2025-08-18",
-      rating: 4,
-      vanzari: 45,
-      descriere: "Tastatura mecanică pentru gaming",
-      garantie: "24 luni",
-      dimensiuni: "44 x 15.3 x 3.4 cm",
-      greutate: "980 g",
-    },
-    {
-      id: 5,
-      nume: "Imprimantă Canon PIXMA",
-      cod: "CANON-PIX-001",
-      categorie: "Imprimante",
-      brand: "Canon",
-      pret: 899.99,
-      pretAchizitie: 720.0,
-      stoc: 0,
-      stocMinim: 3,
-      unitate: "buc",
-      status: "epuizat",
-      locatie: "Depozit B",
-      furnizor: "Office Solutions SRL",
-      dataAdaugare: "2024-05-12",
-      ultimaVanzare: "2025-08-10",
-      rating: 3,
-      vanzari: 8,
-      descriere: "Imprimantă multifuncțională color",
-      garantie: "12 luni",
-      dimensiuni: "40.3 x 31.5 x 15.8 cm",
-      greutate: "6.5 kg",
-    },
-    {
-      id: 6,
-      nume: "Căști Sony WH-1000XM5",
-      cod: "SONY-WH-001",
-      categorie: "Audio",
-      brand: "Sony",
-      pret: 1499.99,
-      pretAchizitie: 1200.0,
-      stoc: 12,
-      stocMinim: 5,
-      unitate: "buc",
-      status: "activ",
-      locatie: "Depozit A",
-      furnizor: "Audio Pro SRL",
-      dataAdaugare: "2024-06-18",
-      ultimaVanzare: "2025-08-19",
-      rating: 5,
-      vanzari: 22,
-      descriere: "Căști wireless cu noise cancelling",
-      garantie: "24 luni",
-      dimensiuni: "25.4 x 19.2 x 7.3 cm",
-      greutate: "250 g",
-    },
-  ]);
-
+  // State management
+  const [produse, setProduse] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [statistics, setStatistics] = useState({});
+  const [relatedData, setRelatedData] = useState({
+    categories: [],
+    brands: [],
+    locations: [],
+    suppliers: []
+  });
+  
+  // UI State
   const [viewMode, setViewMode] = useState("grid");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [selectedProduse, setSelectedProduse] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("toate");
-  const [filterCategorie, setFilterCategorie] = useState("toate");
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalLoading, setIsModalLoading] = useState(false);
+  
+  // Filters
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "",
+    brand: "",
+    status: "",
+    minPrice: "",
+    maxPrice: "",
+    minStock: "",
+    maxStock: "",
+    location: "",
+    sortBy: "nume",
+    sortOrder: "asc",
+    limit: 50,
+    offset: 0
+  });
+
+  // Form data for product modal
+  const [formData, setFormData] = useState({
+    nume: "",
+    cod: "",
+    descriere: "",
+    category_id: "",
+    brand_id: "",
+    supplier_id: "",
+    location_id: "",
+    pret_vanzare: "",
+    pret_achizitie: "",
+    stoc_actual: "",
+    stoc_minim: "",
+    unitate_masura: "buc",
+    garantie_luni: "",
+    greutate: "",
+    dimensiuni_lungime: "",
+    dimensiuni_latime: "",
+    dimensiuni_inaltime: "",
+    cod_bare: "",
+    imagine_principala: "",
+    conditii_pastrare: "",
+    instructiuni_folosire: ""
+  });
+
+  // Load initial data
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  // Load products when filters change
+  useEffect(() => {
+    if (!loading) {
+      loadProducts();
+    }
+  }, [filters]);
+
+  const loadInitialData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load all initial data in parallel
+      const [productsData, statsData, relatedData] = await Promise.all([
+        ProductsService.getProducts(filters),
+        ProductsService.getStatistics(),
+        ProductsService.getRelatedData()
+      ]);
+
+      setProduse(productsData.products || []);
+      setStatistics(statsData || {});
+      setRelatedData(relatedData || {
+        categories: [],
+        brands: [],
+        locations: [],
+        suppliers: []
+      });
+      
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const data = await ProductsService.getProducts(filters);
+      setProduse(data.products || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setError(error.message);
+    }
+  };
+
+  const refreshData = async () => {
+    await loadInitialData();
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value,
+      offset: 0 // Reset pagination when filters change
+    }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      category: "",
+      brand: "",
+      status: "",
+      minPrice: "",
+      maxPrice: "",
+      minStock: "",
+      maxStock: "",
+      location: "",
+      sortBy: "nume",
+      sortOrder: "asc",
+      limit: 50,
+      offset: 0
+    });
+  };
+
+  const openProductModal = (product = null) => {
+    if (product) {
+      setSelectedProduct(product);
+      setFormData({
+        nume: product.nume || "",
+        cod: product.cod || "",
+        descriere: product.descriere || "",
+        category_id: product.category_id || "",
+        brand_id: product.brand_id || "",
+        supplier_id: product.supplier_id || "",
+        location_id: product.location_id || "",
+        pret_vanzare: product.pret_vanzare || "",
+        pret_achizitie: product.pret_achizitie || "",
+        stoc_actual: product.stoc_actual || "",
+        stoc_minim: product.stoc_minim || "",
+        unitate_masura: product.unitate_masura || "buc",
+        garantie_luni: product.garantie_luni || "",
+        greutate: product.greutate || "",
+        dimensiuni_lungime: product.dimensiuni_lungime || "",
+        dimensiuni_latime: product.dimensiuni_latime || "",
+        dimensiuni_inaltime: product.dimensiuni_inaltime || "",
+        cod_bare: product.cod_bare || "",
+        imagine_principala: product.imagine_principala || "",
+        conditii_pastrare: product.conditii_pastrare || "",
+        instructiuni_folosire: product.instructiuni_folosire || ""
+      });
+    } else {
+      setSelectedProduct(null);
+      setFormData({
+        nume: "",
+        cod: "",
+        descriere: "",
+        category_id: "",
+        brand_id: "",
+        supplier_id: "",
+        location_id: "",
+        pret_vanzare: "",
+        pret_achizitie: "",
+        stoc_actual: "",
+        stoc_minim: "",
+        unitate_masura: "buc",
+        garantie_luni: "",
+        greutate: "",
+        dimensiuni_lungime: "",
+        dimensiuni_latime: "",
+        dimensiuni_inaltime: "",
+        cod_bare: "",
+        imagine_principala: "",
+        conditii_pastrare: "",
+        instructiuni_folosire: ""
+      });
+    }
+    setShowProductModal(true);
+  };
+
+  const closeProductModal = () => {
+    setShowProductModal(false);
+    setSelectedProduct(null);
+    setFormData({});
+  };
+
+  const handleFormChange = (key, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const saveProduct = async () => {
+    try {
+      setIsModalLoading(true);
+      
+      if (selectedProduct) {
+        // Update existing product
+        await ProductsService.updateProduct(selectedProduct.id, formData);
+      } else {
+        // Create new product
+        await ProductsService.createProduct(formData);
+      }
+      
+      // Refresh products list
+      await loadProducts();
+      closeProductModal();
+      
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setError(error.message);
+    } finally {
+      setIsModalLoading(false);
+    }
+  };
+
+  const deleteProduct = async (productId) => {
+    if (!window.confirm('Sigur doriți să ștergeți acest produs?')) {
+      return;
+    }
+    
+    try {
+      await ProductsService.deleteProduct(productId);
+      await loadProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      setError(error.message);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -201,7 +301,7 @@ const GestiuneProduse = () => {
       case "activ":
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case "stoc_redus":
-        return <AlertTriangle className="w-4 h-4 text-white" />;
+        return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
       case "epuizat":
         return <X className="w-4 h-4 text-red-600" />;
       case "inactiv":
@@ -211,31 +311,11 @@ const GestiuneProduse = () => {
     }
   };
 
-  const getStockStatus = (produs) => {
-    if (produs.stoc === 0) return "epuizat";
-    if (produs.stoc <= produs.stocMinim) return "stoc_redus";
-    return "stoc_ok";
-  };
-
-  const filteredProduse = produse.filter((produs) => {
-    const matchesSearch =
-      produs.nume.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      produs.cod.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      produs.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      produs.categorie.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      filterStatus === "toate" || produs.status === filterStatus;
-    const matchesCategorie =
-      filterCategorie === "toate" ||
-      produs.categorie.toLowerCase() === filterCategorie;
-    return matchesSearch && matchesStatus && matchesCategorie;
-  });
-
   const toggleSelectAll = () => {
-    if (selectedProduse.length === filteredProduse.length) {
+    if (selectedProduse.length === produse.length) {
       setSelectedProduse([]);
     } else {
-      setSelectedProduse(filteredProduse.map((p) => p.id));
+      setSelectedProduse(produse.map((p) => p.id));
     }
   };
 
@@ -247,29 +327,44 @@ const GestiuneProduse = () => {
     }
   };
 
-  const getRatingStars = (rating) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <Star
-        key={index}
-        className={`w-4 h-4 ${
-          index < rating ? "text-white fill-current" : "text-gray-300"
-        }`}
-      />
-    ));
+  const bulkUpdateStatus = async (status) => {
+    try {
+      await ProductsService.bulkUpdateStatus(selectedProduse, status);
+      await loadProducts();
+      setSelectedProduse([]);
+    } catch (error) {
+      console.error('Error bulk updating status:', error);
+      setError(error.message);
+    }
   };
 
-  const getCategorii = () => {
-    const categorii = [...new Set(produse.map((p) => p.categorie))];
-    return categorii;
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
+          <p className="text-gray-600">Se încarcă produsele...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const calculateProfit = (pret, pretAchizitie) => {
-    return pret - pretAchizitie;
-  };
-
-  const calculateProfitMargin = (pret, pretAchizitie) => {
-    return (((pret - pretAchizitie) / pret) * 100).toFixed(1);
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-8 h-8 mx-auto mb-4 text-red-500" />
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={refreshData}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Încearcă din nou
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -277,7 +372,7 @@ const GestiuneProduse = () => {
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
               Gestiune Produse
             </h1>
             <p className="mt-1 text-sm text-gray-600">
@@ -286,7 +381,7 @@ const GestiuneProduse = () => {
           </div>
           <div className="mt-4 sm:mt-0 flex flex-wrap gap-3">
             <button
-              onClick={() => setShowProductModal(true)}
+              onClick={() => openProductModal()}
               className="inline-flex items-center px-4 py-2 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all duration-200"
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -321,7 +416,10 @@ const GestiuneProduse = () => {
               <Filter className="w-5 h-5 mr-2" />
               Filtre
             </button>
-            <button className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200">
+            <button 
+              onClick={refreshData}
+              className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200"
+            >
               <RefreshCw className="w-5 h-5 mr-2" />
               Actualizare
             </button>
@@ -337,18 +435,18 @@ const GestiuneProduse = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Caută după nume, cod, brand sau categorie..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Caută după nume, cod, brand..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
               className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="toate">Toate statusurile</option>
+              <option value="">Toate statusurile</option>
               <option value="activ">Activ</option>
               <option value="stoc_redus">Stoc redus</option>
               <option value="epuizat">Epuizat</option>
@@ -361,80 +459,88 @@ const GestiuneProduse = () => {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Categorie
                   </label>
                   <select
-                    value={filterCategorie}
-                    onChange={(e) => setFilterCategorie(e.target.value)}
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="toate">Toate categoriile</option>
-                    {getCategorii().map((cat) => (
-                      <option key={cat} value={cat.toLowerCase()}>
-                        {cat}
+                    <option value="">Toate categoriile</option>
+                    {relatedData.categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nume}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Brand
+                  </label>
+                  <select
+                    value={filters.brand}
+                    onChange={(e) => handleFilterChange('brand', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Toate brandurile</option>
+                    {relatedData.brands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.nume}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Preț (RON)
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       placeholder="Min"
+                      value={filters.minPrice}
+                      onChange={(e) => handleFilterChange('minPrice', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <input
                       type="number"
                       placeholder="Max"
+                      value={filters.maxPrice}
+                      onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Stoc
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       placeholder="Min"
+                      value={filters.minStock}
+                      onChange={(e) => handleFilterChange('minStock', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <input
                       type="number"
                       placeholder="Max"
+                      value={filters.maxStock}
+                      onChange={(e) => handleFilterChange('maxStock', e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
-                    Brand
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Brand produs"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
               </div>
               <div className="mt-4 flex justify-end gap-3">
                 <button
-                  onClick={() => {
-                    setFilterStatus("toate");
-                    setFilterCategorie("toate");
-                    setSearchTerm("");
-                  }}
+                  onClick={resetFilters}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800"
                 >
                   Resetează
-                </button>
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                  Aplică Filtre
                 </button>
               </div>
             </div>
@@ -447,8 +553,8 @@ const GestiuneProduse = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Produse</p>
-                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
-                  {produse.length}
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  {statistics.totalProducts || produse.length}
                 </p>
               </div>
               <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
@@ -460,11 +566,11 @@ const GestiuneProduse = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Valoare Stoc</p>
-                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
-                  {produse
-                    .reduce((sum, p) => sum + p.pret * p.stoc, 0)
-                    .toLocaleString("ro-RO")}{" "}
-                  RON
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  {statistics.totalValue ? 
+                    `${statistics.totalValue.toLocaleString("ro-RO")} RON` :
+                    `${produse.reduce((sum, p) => sum + (p.pret_vanzare || 0) * (p.stoc_actual || 0), 0).toLocaleString("ro-RO")} RON`
+                  }
                 </p>
               </div>
               <div className="p-3 rounded-lg bg-gradient-to-br from-green-500 to-green-600 shadow-lg">
@@ -476,10 +582,9 @@ const GestiuneProduse = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Stoc Redus</p>
-                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
-                  {
-                    produse.filter((p) => p.stoc <= p.stocMinim && p.stoc > 0)
-                      .length
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  {statistics.lowStockCount || 
+                    produse.filter((p) => (p.stoc_actual || 0) <= (p.stoc_minim || 0) && (p.stoc_actual || 0) > 0).length
                   }
                 </p>
               </div>
@@ -492,8 +597,8 @@ const GestiuneProduse = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Categorii</p>
-                <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
-                  {getCategorii().length}
+                <p className="text-2xl lg:text-3xl font-bold text-gray-900">
+                  {statistics.categoriesCount || relatedData.categories.length}
                 </p>
               </div>
               <div className="p-3 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
@@ -506,7 +611,7 @@ const GestiuneProduse = () => {
         {/* Grid View */}
         {viewMode === "grid" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {filteredProduse.map((produs) => (
+            {produse.map((produs) => (
               <div
                 key={produs.id}
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden group"
@@ -531,7 +636,7 @@ const GestiuneProduse = () => {
                     />
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
                     {produs.nume}
                   </h3>
                   <p className="text-sm text-gray-600 mb-3">
@@ -541,39 +646,29 @@ const GestiuneProduse = () => {
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Preț:</span>
-                      <span className="text-lg font-semibold text-gray-900 mb-3">
-                        {produs.pret.toLocaleString("ro-RO")} RON
+                      <span className="text-lg font-semibold text-gray-900">
+                        {(produs.pret_vanzare || 0).toLocaleString("ro-RO")} RON
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Stoc:</span>
                       <span
                         className={`font-medium ${
-                          produs.stoc === 0
+                          (produs.stoc_actual || 0) === 0
                             ? "text-red-600"
-                            : produs.stoc <= produs.stocMinim
-                            ? "text-white"
+                            : (produs.stoc_actual || 0) <= (produs.stoc_minim || 0)
+                            ? "text-yellow-600"
                             : "text-green-600"
                         }`}
                       >
-                        {produs.stoc} {produs.unitate}
+                        {produs.stoc_actual || 0} {produs.unitate_masura}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Profit:</span>
                       <span className="font-medium text-green-600">
-                        {calculateProfit(
-                          produs.pret,
-                          produs.pretAchizitie
-                        ).toLocaleString("ro-RO")}{" "}
-                        RON
+                        {((produs.pret_vanzare || 0) - (produs.pret_achizitie || 0)).toLocaleString("ro-RO")} RON
                       </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Rating:</span>
-                      <div className="flex items-center">
-                        {getRatingStars(produs.rating)}
-                      </div>
                     </div>
                   </div>
 
@@ -585,29 +680,29 @@ const GestiuneProduse = () => {
                           produs.status
                         )}`}
                       >
-                        {produs.status.replace("_", " ")}
+                        {produs.status?.replace("_", " ") || "activ"}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {produs.vanzari} vândute
-                    </span>
                   </div>
 
                   <div className="pt-4 border-t border-gray-100 flex justify-between">
                     <button
-                      onClick={() => {
-                        setSelectedProduct(produs);
-                        setShowProductModal(true);
-                      }}
+                      onClick={() => openProductModal(produs)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <Eye className="w-4 h-4 text-gray-600" />
                     </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => openProductModal(produs)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
                       <Edit className="w-4 h-4 text-gray-600" />
                     </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Barcode className="w-4 h-4 text-gray-600" />
+                    <button 
+                      onClick={() => deleteProduct(produs.id)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-gray-600" />
                     </button>
                     <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                       <MoreVertical className="w-4 h-4 text-gray-600" />
@@ -629,9 +724,7 @@ const GestiuneProduse = () => {
                     <th className="px-6 py-4 text-left">
                       <input
                         type="checkbox"
-                        checked={
-                          selectedProduse.length === filteredProduse.length
-                        }
+                        checked={selectedProduse.length === produse.length && produse.length > 0}
                         onChange={toggleSelectAll}
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
@@ -660,7 +753,7 @@ const GestiuneProduse = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredProduse.map((produs) => (
+                  {produse.map((produs) => (
                     <tr
                       key={produs.id}
                       className="hover:bg-gray-50 transition-colors duration-150"
@@ -682,7 +775,7 @@ const GestiuneProduse = () => {
                             <div className="text-sm font-medium text-gray-900">
                               {produs.nume}
                             </div>
-                            <div className="text-sm text-gray-600 text-gray-500">
+                            <div className="text-sm text-gray-500">
                               {produs.cod} • {produs.brand}
                             </div>
                           </div>
@@ -695,27 +788,26 @@ const GestiuneProduse = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {produs.pret.toLocaleString("ro-RO")} RON
+                          {(produs.pret_vanzare || 0).toLocaleString("ro-RO")} RON
                         </div>
-                        <div className="text-sm text-gray-600 text-gray-500">
-                          Cost: {produs.pretAchizitie.toLocaleString("ro-RO")}{" "}
-                          RON
+                        <div className="text-sm text-gray-500">
+                          Cost: {(produs.pret_achizitie || 0).toLocaleString("ro-RO")} RON
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div
                           className={`text-sm font-medium ${
-                            produs.stoc === 0
+                            (produs.stoc_actual || 0) === 0
                               ? "text-red-600"
-                              : produs.stoc <= produs.stocMinim
-                              ? "text-white"
+                              : (produs.stoc_actual || 0) <= (produs.stoc_minim || 0)
+                              ? "text-yellow-600"
                               : "text-green-600"
                           }`}
                         >
-                          {produs.stoc} {produs.unitate}
+                          {produs.stoc_actual || 0} {produs.unitate_masura}
                         </div>
-                        <div className="text-sm text-gray-600 text-gray-500">
-                          Min: {produs.stocMinim}
+                        <div className="text-sm text-gray-500">
+                          Min: {produs.stoc_minim || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -726,39 +818,38 @@ const GestiuneProduse = () => {
                               produs.status
                             )}`}
                           >
-                            {produs.status.replace("_", " ")}
+                            {produs.status?.replace("_", " ") || "activ"}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-green-600">
-                          +
-                          {calculateProfit(
-                            produs.pret,
-                            produs.pretAchizitie
-                          ).toLocaleString("ro-RO")}{" "}
-                          RON
+                          +{((produs.pret_vanzare || 0) - (produs.pret_achizitie || 0)).toLocaleString("ro-RO")} RON
                         </div>
-                        <div className="text-sm text-gray-600 text-gray-500">
-                          {calculateProfitMargin(
-                            produs.pret,
-                            produs.pretAchizitie
-                          )}
-                          % marjă
+                        <div className="text-sm text-gray-500">
+                          {produs.pret_vanzare > 0 ? 
+                            (((produs.pret_vanzare - produs.pret_achizitie) / produs.pret_vanzare) * 100).toFixed(1) : 0
+                          }% marjă
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                          <button 
+                            onClick={() => openProductModal(produs)}
+                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
                             <Eye className="w-4 h-4 text-gray-600" />
                           </button>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                          <button 
+                            onClick={() => openProductModal(produs)}
+                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
                             <Edit className="w-4 h-4 text-gray-600" />
                           </button>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Barcode className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                          <button 
+                            onClick={() => deleteProduct(produs.id)}
+                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
                             <Trash2 className="w-4 h-4 text-gray-600" />
                           </button>
                           <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
@@ -781,16 +872,16 @@ const GestiuneProduse = () => {
           <span className="text-sm text-gray-600">
             {selectedProduse.length} selectate
           </span>
-          <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Exportă
-          </button>
-          <button className="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
+          <button 
+            onClick={() => bulkUpdateStatus('activ')}
+            className="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
+          >
             Activează
           </button>
-          <button className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
-            Actualizează Stoc
-          </button>
-          <button className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600">
+          <button 
+            onClick={() => bulkUpdateStatus('inactiv')}
+            className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
+          >
             Dezactivează
           </button>
           <button
@@ -808,14 +899,11 @@ const GestiuneProduse = () => {
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  {selectedProduct ? "Detalii Produs" : "Produs Nou"}
+                <h2 className="text-xl font-bold text-gray-900">
+                  {selectedProduct ? "Editare Produs" : "Produs Nou"}
                 </h2>
                 <button
-                  onClick={() => {
-                    setShowProductModal(false);
-                    setSelectedProduct(null);
-                  }}
+                  onClick={closeProductModal}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5 text-gray-600" />
@@ -827,78 +915,89 @@ const GestiuneProduse = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
-                      Nume Produs
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nume Produs *
                     </label>
                     <input
                       type="text"
-                      defaultValue={selectedProduct?.nume || ""}
+                      value={formData.nume}
+                      onChange={(e) => handleFormChange('nume', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Numele produsului"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
-                      Cod Produs
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cod Produs *
                     </label>
                     <input
                       type="text"
-                      defaultValue={selectedProduct?.cod || ""}
+                      value={formData.cod}
+                      onChange={(e) => handleFormChange('cod', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Cod unic"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Categorie
                     </label>
                     <select
-                      defaultValue={selectedProduct?.categorie || ""}
+                      value={formData.category_id}
+                      onChange={(e) => handleFormChange('category_id', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Selectează categoria</option>
-                      {getCategorii().map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
+                      {relatedData.categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.nume}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Brand
                     </label>
-                    <input
-                      type="text"
-                      defaultValue={selectedProduct?.brand || ""}
+                    <select
+                      value={formData.brand_id}
+                      onChange={(e) => handleFormChange('brand_id', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Brandul produsului"
-                    />
+                    >
+                      <option value="">Selectează brandul</option>
+                      {relatedData.brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.nume}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Preț Vânzare (RON)
                       </label>
                       <input
                         type="number"
                         step="0.01"
-                        defaultValue={selectedProduct?.pret || ""}
+                        value={formData.pret_vanzare}
+                        onChange={(e) => handleFormChange('pret_vanzare', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="0.00"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Preț Achiziție (RON)
                       </label>
                       <input
                         type="number"
                         step="0.01"
-                        defaultValue={selectedProduct?.pretAchizitie || ""}
+                        value={formData.pret_achizitie}
+                        onChange={(e) => handleFormChange('pret_achizitie', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="0.00"
                       />
@@ -906,34 +1005,37 @@ const GestiuneProduse = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Stoc Actual
                       </label>
                       <input
                         type="number"
-                        defaultValue={selectedProduct?.stoc || ""}
+                        value={formData.stoc_actual}
+                        onChange={(e) => handleFormChange('stoc_actual', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="0"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Stoc Minim
                       </label>
                       <input
                         type="number"
-                        defaultValue={selectedProduct?.stocMinim || ""}
+                        value={formData.stoc_minim}
+                        onChange={(e) => handleFormChange('stoc_minim', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="0"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Unitate Măsură
                     </label>
                     <select
-                      defaultValue={selectedProduct?.unitate || "buc"}
+                      value={formData.unitate_masura}
+                      onChange={(e) => handleFormChange('unitate_masura', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="buc">Bucată</option>
@@ -944,25 +1046,32 @@ const GestiuneProduse = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
-                      Locație
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Furnizor
                     </label>
-                    <input
-                      type="text"
-                      defaultValue={selectedProduct?.locatie || ""}
+                    <select
+                      value={formData.supplier_id}
+                      onChange={(e) => handleFormChange('supplier_id', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Locația în depozit"
-                    />
+                    >
+                      <option value="">Selectează furnizorul</option>
+                      {relatedData.suppliers.map((supplier) => (
+                        <option key={supplier.id} value={supplier.id}>
+                          {supplier.nume}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Descriere
                   </label>
                   <textarea
                     rows="3"
-                    defaultValue={selectedProduct?.descriere || ""}
+                    value={formData.descriere}
+                    onChange={(e) => handleFormChange('descriere', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Descrierea produsului..."
                   />
@@ -972,15 +1081,18 @@ const GestiuneProduse = () => {
 
             <div className="p-6 border-t border-gray-100 flex justify-end gap-3">
               <button
-                onClick={() => {
-                  setShowProductModal(false);
-                  setSelectedProduct(null);
-                }}
+                onClick={closeProductModal}
+                disabled={isModalLoading}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 Anulează
               </button>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+              <button 
+                onClick={saveProduct}
+                disabled={isModalLoading || !formData.nume || !formData.cod}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isModalLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {selectedProduct ? "Actualizează" : "Adaugă Produs"}
               </button>
             </div>

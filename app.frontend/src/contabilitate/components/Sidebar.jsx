@@ -23,6 +23,9 @@ import {
   X,
   Bell,
   Search,
+  Award,
+  Tag,
+  Truck,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -31,6 +34,7 @@ const Sidebar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState(["Contracte"]);
+  const [expandedNestedMenus, setExpandedNestedMenus] = useState([]);
 
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
@@ -42,7 +46,18 @@ const Sidebar = () => {
       hasSubmenu: true,
       submenu: [
         { icon: Users, label: "Clienți", path: "/clienti" },
-        { icon: Package, label: "Produse", path: "/produse" },
+        { 
+          icon: Package, 
+          label: "Produse", 
+          path: "/produse",
+          hasNestedSubmenu: true,
+          nestedSubmenu: [
+            { icon: Package, label: "Gestiune Produse", path: "/produse" },
+            { icon: Tag, label: "Categorii", path: "/categorii" },
+            { icon: Award, label: "Brand-uri", path: "/brand-uri" },
+            { icon: Truck, label: "Furnizori", path: "/furnizori" },
+          ]
+        },
         { icon: User, label: "Angajați", path: "/angajati" },
         { icon: Calendar, label: "Concedii", path: "/concedii" },
       ],
@@ -56,6 +71,14 @@ const Sidebar = () => {
 
   const toggleSubmenu = (label) => {
     setExpandedMenus((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label]
+    );
+  };
+
+  const toggleNestedSubmenu = (label) => {
+    setExpandedNestedMenus((prev) =>
       prev.includes(label)
         ? prev.filter((item) => item !== label)
         : [...prev, label]
@@ -82,15 +105,28 @@ const Sidebar = () => {
   const getPageTitle = () => {
     const currentRoute = menuItems.find(item => 
       item.path === location.pathname || 
-      (item.submenu && item.submenu.find(subItem => subItem.path === location.pathname))
+      (item.submenu && item.submenu.find(subItem => 
+        subItem.path === location.pathname ||
+        (subItem.nestedSubmenu && subItem.nestedSubmenu.find(nestedItem => nestedItem.path === location.pathname))
+      ))
     );
     
     if (currentRoute) {
       if (currentRoute.path === location.pathname) {
         return currentRoute.label;
       }
-      const subRoute = currentRoute.submenu?.find(subItem => subItem.path === location.pathname);
-      return subRoute?.label || "Dashboard";
+      const subRoute = currentRoute.submenu?.find(subItem => 
+        subItem.path === location.pathname ||
+        (subItem.nestedSubmenu && subItem.nestedSubmenu.find(nestedItem => nestedItem.path === location.pathname))
+      );
+      
+      if (subRoute) {
+        if (subRoute.path === location.pathname) {
+          return subRoute.label;
+        }
+        const nestedRoute = subRoute.nestedSubmenu?.find(nestedItem => nestedItem.path === location.pathname);
+        return nestedRoute?.label || "Dashboard";
+      }
     }
     
     // Handle settings pages
@@ -310,40 +346,132 @@ const Sidebar = () => {
                       {item.submenu.map((subItem, subIndex) => {
                         const SubIconComponent = subItem.icon;
                         const isSubActive = isActiveRoute(subItem.path);
+                        const hasNestedSubmenu = subItem.hasNestedSubmenu;
+                        const isNestedExpanded = expandedNestedMenus.includes(subItem.label);
 
                         return (
                           <li key={subIndex}>
-                            <Link
-                              to={subItem.path}
-                              onClick={handleMobileMenuClose}
-                              className={`
-                                w-full flex items-center px-3 py-2 rounded-lg
-                                transition-all duration-200 group block
-                                ${
-                                  isSubActive
-                                    ? "bg-orange-50 text-orange-600"
-                                    : "hover:bg-gray-50 text-gray-600 hover:text-gray-900"
-                                }
-                              `}
-                            >
-                              <SubIconComponent
+                            {hasNestedSubmenu ? (
+                              <>
+                                <button
+                                  onClick={() => toggleNestedSubmenu(subItem.label)}
+                                  className={`
+                                    w-full flex items-center justify-between px-3 py-2 rounded-lg
+                                    transition-all duration-200 group
+                                    ${
+                                      isSubActive
+                                        ? "bg-orange-50 text-orange-600"
+                                        : "hover:bg-gray-50 text-gray-600 hover:text-gray-900"
+                                    }
+                                  `}
+                                >
+                                  <div className="flex items-center">
+                                    <SubIconComponent
+                                      className={`
+                                      w-4 h-4 mr-3 transition-all duration-200
+                                      ${
+                                        isSubActive
+                                          ? "text-orange-500"
+                                          : "text-gray-400 group-hover:text-gray-600"
+                                      }
+                                    `}
+                                    />
+                                    <span
+                                      className={`text-sm ${
+                                        isSubActive ? "font-medium" : ""
+                                      }`}
+                                    >
+                                      {subItem.label}
+                                    </span>
+                                  </div>
+                                  <ChevronDown
+                                    className={`
+                                    w-3 h-3 transition-transform duration-200
+                                    ${isNestedExpanded ? "rotate-180" : ""}
+                                    ${isSubActive ? "text-orange-500" : "text-gray-400"}
+                                  `}
+                                  />
+                                </button>
+                                
+                                {/* Nested Submenu */}
+                                {isNestedExpanded && (
+                                  <ul className="mt-1 ml-4 space-y-1">
+                                    {subItem.nestedSubmenu.map((nestedItem, nestedIndex) => {
+                                      const NestedIconComponent = nestedItem.icon;
+                                      const isNestedActive = isActiveRoute(nestedItem.path);
+
+                                      return (
+                                        <li key={nestedIndex}>
+                                          <Link
+                                            to={nestedItem.path}
+                                            onClick={handleMobileMenuClose}
+                                            className={`
+                                              w-full flex items-center px-3 py-2 rounded-lg
+                                              transition-all duration-200 group block
+                                              ${
+                                                isNestedActive
+                                                  ? "bg-orange-100 text-orange-700"
+                                                  : "hover:bg-gray-50 text-gray-500 hover:text-gray-700"
+                                              }
+                                            `}
+                                          >
+                                            <NestedIconComponent
+                                              className={`
+                                              w-3 h-3 mr-3 transition-all duration-200
+                                              ${
+                                                isNestedActive
+                                                  ? "text-orange-600"
+                                                  : "text-gray-400 group-hover:text-gray-500"
+                                              }
+                                            `}
+                                            />
+                                            <span
+                                              className={`text-xs ${
+                                                isNestedActive ? "font-medium" : ""
+                                              }`}
+                                            >
+                                              {nestedItem.label}
+                                            </span>
+                                          </Link>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                )}
+                              </>
+                            ) : (
+                              <Link
+                                to={subItem.path}
+                                onClick={handleMobileMenuClose}
                                 className={`
-                                w-4 h-4 mr-3 transition-all duration-200
-                                ${
-                                  isSubActive
-                                    ? "text-orange-500"
-                                    : "text-gray-400 group-hover:text-gray-600"
-                                }
-                              `}
-                              />
-                              <span
-                                className={`text-sm ${
-                                  isSubActive ? "font-medium" : ""
-                                }`}
+                                  w-full flex items-center px-3 py-2 rounded-lg
+                                  transition-all duration-200 group block
+                                  ${
+                                    isSubActive
+                                      ? "bg-orange-50 text-orange-600"
+                                      : "hover:bg-gray-50 text-gray-600 hover:text-gray-900"
+                                  }
+                                `}
                               >
-                                {subItem.label}
-                              </span>
-                            </Link>
+                                <SubIconComponent
+                                  className={`
+                                  w-4 h-4 mr-3 transition-all duration-200
+                                  ${
+                                    isSubActive
+                                      ? "text-orange-500"
+                                      : "text-gray-400 group-hover:text-gray-600"
+                                  }
+                                `}
+                                />
+                                <span
+                                  className={`text-sm ${
+                                    isSubActive ? "font-medium" : ""
+                                  }`}
+                                >
+                                  {subItem.label}
+                                </span>
+                              </Link>
+                            )}
                           </li>
                         );
                       })}

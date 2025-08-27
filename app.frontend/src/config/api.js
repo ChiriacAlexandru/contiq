@@ -15,6 +15,28 @@ export const API_ENDPOINTS = {
   // Admin
   ADMIN_USERS: `${API_BASE_URL}/api/admin/users`,
   ADMIN_ACTIVATE_USER: (userId) => `${API_BASE_URL}/api/admin/users/${userId}/activate`,
+  
+  // Products
+  PRODUCTS: `${API_BASE_URL}/api/products`,
+  PRODUCTS_STATISTICS: `${API_BASE_URL}/api/products/statistics`,
+  PRODUCTS_RELATED_DATA: `${API_BASE_URL}/api/products/related-data`,
+  PRODUCTS_BULK_STATUS: `${API_BASE_URL}/api/products/bulk-status`,
+  PRODUCT_BY_ID: (id) => `${API_BASE_URL}/api/products/${id}`,
+  
+  // Categories
+  CATEGORIES: `${API_BASE_URL}/api/categories`,
+  CATEGORIES_PARENT: `${API_BASE_URL}/api/categories/parent`,
+  CATEGORY_BY_ID: (id) => `${API_BASE_URL}/api/categories/${id}`,
+  
+  // Brands
+  BRANDS: `${API_BASE_URL}/api/brands`,
+  BRANDS_ACTIVE: `${API_BASE_URL}/api/brands/active`,
+  BRAND_BY_ID: (id) => `${API_BASE_URL}/api/brands/${id}`,
+  
+  // Suppliers
+  SUPPLIERS: `${API_BASE_URL}/api/suppliers`,
+  SUPPLIERS_ACTIVE: `${API_BASE_URL}/api/suppliers/active`,
+  SUPPLIER_BY_ID: (id) => `${API_BASE_URL}/api/suppliers/${id}`,
 };
 
 // HTTP Client with authentication
@@ -141,6 +163,158 @@ export const UserService = {
 
   updateCompanyData: async (companyData) => {
     return ApiClient.put(API_ENDPOINTS.UPDATE_COMPANY_DATA, companyData);
+  }
+};
+
+// Products Service
+export const ProductsService = {
+  getProducts: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
+        params.append(key, filters[key]);
+      }
+    });
+    const url = `${API_ENDPOINTS.PRODUCTS}?${params.toString()}`;
+    const response = await ApiClient.get(url);
+    return response.data;
+  },
+
+  getProduct: async (id) => {
+    const response = await ApiClient.get(API_ENDPOINTS.PRODUCT_BY_ID(id));
+    return response.data;
+  },
+
+  createProduct: async (productData) => {
+    const response = await ApiClient.post(API_ENDPOINTS.PRODUCTS, productData);
+    return response.data;
+  },
+
+  updateProduct: async (id, productData) => {
+    const response = await ApiClient.put(API_ENDPOINTS.PRODUCT_BY_ID(id), productData);
+    return response.data;
+  },
+
+  deleteProduct: async (id) => {
+    const response = await ApiClient.delete(API_ENDPOINTS.PRODUCT_BY_ID(id));
+    return response.data;
+  },
+
+  getStatistics: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.PRODUCTS_STATISTICS);
+    return response.data;
+  },
+
+  getRelatedData: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.PRODUCTS_RELATED_DATA);
+    return response.data;
+  },
+
+  bulkUpdateStatus: async (productIds, status) => {
+    const response = await ApiClient.post(API_ENDPOINTS.PRODUCTS_BULK_STATUS, {
+      productIds,
+      status
+    });
+    return response.data;
+  }
+};
+
+// Categories Service
+export const CategoriesService = {
+  getCategories: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.CATEGORIES);
+    return response.data;
+  },
+
+  getCategory: async (id) => {
+    const response = await ApiClient.get(API_ENDPOINTS.CATEGORY_BY_ID(id));
+    return response.data;
+  },
+
+  createCategory: async (categoryData) => {
+    const response = await ApiClient.post(API_ENDPOINTS.CATEGORIES, categoryData);
+    return response.data;
+  },
+
+  updateCategory: async (id, categoryData) => {
+    const response = await ApiClient.put(API_ENDPOINTS.CATEGORY_BY_ID(id), categoryData);
+    return response.data;
+  },
+
+  deleteCategory: async (id) => {
+    const response = await ApiClient.delete(API_ENDPOINTS.CATEGORY_BY_ID(id));
+    return response.data;
+  },
+
+  getParentCategories: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.CATEGORIES_PARENT);
+    return response.data;
+  }
+};
+
+// Brands Service
+export const BrandsService = {
+  getBrands: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.BRANDS);
+    return response.data;
+  },
+
+  getBrand: async (id) => {
+    const response = await ApiClient.get(API_ENDPOINTS.BRAND_BY_ID(id));
+    return response.data;
+  },
+
+  createBrand: async (brandData) => {
+    const response = await ApiClient.post(API_ENDPOINTS.BRANDS, brandData);
+    return response.data;
+  },
+
+  updateBrand: async (id, brandData) => {
+    const response = await ApiClient.put(API_ENDPOINTS.BRAND_BY_ID(id), brandData);
+    return response.data;
+  },
+
+  deleteBrand: async (id) => {
+    const response = await ApiClient.delete(API_ENDPOINTS.BRAND_BY_ID(id));
+    return response.data;
+  },
+
+  getActiveBrands: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.BRANDS_ACTIVE);
+    return response.data;
+  }
+};
+
+// Suppliers Service
+export const SuppliersService = {
+  getSuppliers: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.SUPPLIERS);
+    return response.data;
+  },
+
+  getSupplier: async (id) => {
+    const response = await ApiClient.get(API_ENDPOINTS.SUPPLIER_BY_ID(id));
+    return response.data;
+  },
+
+  createSupplier: async (supplierData) => {
+    const response = await ApiClient.post(API_ENDPOINTS.SUPPLIERS, supplierData);
+    return response.data;
+  },
+
+  updateSupplier: async (id, supplierData) => {
+    const response = await ApiClient.put(API_ENDPOINTS.SUPPLIER_BY_ID(id), supplierData);
+    return response.data;
+  },
+
+  deleteSupplier: async (id) => {
+    const response = await ApiClient.delete(API_ENDPOINTS.SUPPLIER_BY_ID(id));
+    return response.data;
+  },
+
+  getActiveSuppliers: async () => {
+    const response = await ApiClient.get(API_ENDPOINTS.SUPPLIERS_ACTIVE);
+    return response.data;
   }
 };
 

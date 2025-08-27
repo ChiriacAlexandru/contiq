@@ -17,6 +17,10 @@ validateEnvironment();
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const adminRoutes = require('./routes/admin');
+const productsRoutes = require('./routes/products');
+const categoriesRoutes = require('./routes/categories');
+const brandsRoutes = require('./routes/brands');
+const suppliersRoutes = require('./routes/suppliers');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,6 +40,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/brands', brandsRoutes);
+app.use('/api/suppliers', suppliersRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ 

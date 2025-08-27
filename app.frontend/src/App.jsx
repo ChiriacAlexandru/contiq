@@ -12,6 +12,9 @@ import GestiuneClienti from "./contabilitate/pages/contracte/clienti/GestiuneCli
 import GestiuneAngajati from "./contabilitate/pages/contracte/angajati/GestiuneAngajati";
 import GestiuneProduse from "./contabilitate/pages/contracte/produse/GestiuneProduse";
 import GestiuneConcedii from "./contabilitate/pages/contracte/concedii/GestiuneConcedii";
+import GestiuneCategorii from "./contabilitate/pages/contracte/management/GestiuneCategorii";
+import GestiuneBrand from "./contabilitate/pages/contracte/management/GestiuneBrand";
+import GestiuneFurnizori from "./contabilitate/pages/contracte/management/GestiuneFurnizori";
 import GestiuneSabloane from "./contabilitate/pages/sabloane/GestiuneSabloane";
 import Suport from "./contabilitate/pages/suport/Suport";
 import DateFirma from "./contabilitate/pages/setari/DateFirma";
@@ -39,6 +42,9 @@ const App = () => {
           <Route path="clienti" element={<GestiuneClienti />} />
           <Route path="angajati" element={<GestiuneAngajati />} />
           <Route path="produse" element={<GestiuneProduse />} />
+          <Route path="categorii" element={<GestiuneCategorii />} />
+          <Route path="brand-uri" element={<GestiuneBrand />} />
+          <Route path="furnizori" element={<GestiuneFurnizori />} />
           <Route path="concedii" element={<GestiuneConcedii />} />
           <Route path="sabloane" element={<GestiuneSabloane />} />
           <Route path="suport" element={<Suport />} />
