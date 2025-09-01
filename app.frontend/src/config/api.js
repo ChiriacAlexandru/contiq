@@ -56,6 +56,12 @@ export const API_ENDPOINTS = {
   DOCUMENT_STATUS: (id) => `${API_BASE_URL}/api/documents/${id}/status`,
   DOCUMENT_PAYMENT_STATUS: (id) => `${API_BASE_URL}/api/documents/${id}/payment-status`,
   DOCUMENTS_BY_CLIENT: (clientId) => `${API_BASE_URL}/api/documents/client/${clientId}`,
+  
+  // Document Files
+  DOCUMENT_FILES: `${API_BASE_URL}/api/document-files`,
+  DOCUMENT_FILES_UPLOAD: `${API_BASE_URL}/api/document-files/upload`,
+  DOCUMENT_FILE_BY_ID: (id) => `${API_BASE_URL}/api/document-files/${id}`,
+  DOCUMENT_FILE_DOWNLOAD_URL: (id) => `${API_BASE_URL}/api/document-files/${id}/download-url`,
 };
 
 // HTTP Client with authentication
@@ -489,3 +495,43 @@ export const DocumentsService = {
 };
 
 export default ApiClient;
+
+// Document Files Service (multipart uploads)
+export const DocumentFilesService = {
+  list: async (params = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') query.append(k, String(v));
+    });
+    const url = `${API_ENDPOINTS.DOCUMENT_FILES}?${query.toString()}`;
+    return ApiClient.get(url).then(r => r.data);
+  },
+
+  upload: async (files, meta = {}) => {
+    const token = localStorage.getItem('token');
+    const form = new FormData();
+    Array.from(files).forEach(f => form.append('files', f));
+    Object.entries(meta).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) form.append(k, v);
+    });
+
+    const resp = await fetch(API_ENDPOINTS.DOCUMENT_FILES_UPLOAD, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Upload failed');
+    return data.data;
+  },
+
+  getDownloadUrl: async (id) => {
+    const resp = await ApiClient.get(API_ENDPOINTS.DOCUMENT_FILE_DOWNLOAD_URL(id));
+    return resp.data.url;
+  },
+
+  remove: async (id) => {
+    const resp = await ApiClient.delete(API_ENDPOINTS.DOCUMENT_FILE_BY_ID(id));
+    return resp.data;
+  }
+};

@@ -86,7 +86,7 @@ class DocumentsController {
       }
 
       // Get user ID from auth middleware
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
       if (!userId) {
         return res.status(401).json({
           success: false,
@@ -127,7 +127,7 @@ class DocumentsController {
       }
 
       const documentId = req.params.id;
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
 
       if (!userId) {
         return res.status(401).json({
@@ -191,7 +191,7 @@ class DocumentsController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
 
       if (!userId) {
         return res.status(401).json({
@@ -378,7 +378,7 @@ class DocumentsController {
   static async duplicateDocument(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      const userId = req.user?.userId;
 
       if (!userId) {
         return res.status(401).json({

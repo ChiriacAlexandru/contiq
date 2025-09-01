@@ -23,6 +23,7 @@ const brandsRoutes = require('./routes/brands');
 const suppliersRoutes = require('./routes/suppliers');
 const clientsRoutes = require('./routes/clients');
 const documentsRoutes = require('./routes/documents');
+const documentFilesRoutes = require('./routes/documentFiles');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use('/api/brands', brandsRoutes);
 app.use('/api/suppliers', suppliersRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/documents', documentsRoutes);
+app.use('/api/document-files', documentFilesRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ 

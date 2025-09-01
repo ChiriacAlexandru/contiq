@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FileInput,
   Upload,
@@ -23,69 +23,18 @@ import {
   Folder,
 } from "lucide-react";
 
+import { DocumentFilesService } from "../../../config/api";
+
+const formatSize = (bytes) => {
+  if (!bytes && bytes !== 0) return '';
+  const units = ['B','KB','MB','GB'];
+  let i = 0; let v = Number(bytes);
+  while (v >= 1024 && i < units.length-1) { v/=1024; i++; }
+  return `${v.toFixed( (i>1) ? 2 : 0)} ${units[i]}`;
+};
+
 const DocumenteIntrare = () => {
-  const [documente, setDocumente] = useState([
-    {
-      id: 1,
-      nume: "Factura_Furnizor_001.pdf",
-      tip: "PDF",
-      dimensiune: "2.4 MB",
-      data: "2025-08-24",
-      ora: "14:30",
-      furnizor: "SC Tech Supplies SRL",
-      status: "procesat",
-      s3Url: "https://s3.amazonaws.com/bucket/doc1.pdf",
-      thumbnail: null,
-    },
-    {
-      id: 2,
-      nume: "Contract_Servicii_2025.pdf",
-      tip: "PDF",
-      dimensiune: "1.8 MB",
-      data: "2025-08-23",
-      ora: "10:15",
-      furnizor: "Digital Services SRL",
-      status: "în procesare",
-      s3Url: "https://s3.amazonaws.com/bucket/doc2.pdf",
-      thumbnail: null,
-    },
-    {
-      id: 3,
-      nume: "Aviz_Marfa_August.jpg",
-      tip: "JPG",
-      dimensiune: "856 KB",
-      data: "2025-08-22",
-      ora: "16:45",
-      furnizor: "Logistics Partner SRL",
-      status: "procesat",
-      s3Url: "https://s3.amazonaws.com/bucket/doc3.jpg",
-      thumbnail: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      nume: "Nota_Contabila_Q3.xlsx",
-      tip: "XLSX",
-      dimensiune: "524 KB",
-      data: "2025-08-21",
-      ora: "09:20",
-      furnizor: "Contabil Expert SRL",
-      status: "eroare",
-      s3Url: "https://s3.amazonaws.com/bucket/doc4.xlsx",
-      thumbnail: null,
-    },
-    {
-      id: 5,
-      nume: "Chitanta_Plata_153.pdf",
-      tip: "PDF",
-      dimensiune: "312 KB",
-      data: "2025-08-20",
-      ora: "11:30",
-      furnizor: "Utility Provider SA",
-      status: "procesat",
-      s3Url: "https://s3.amazonaws.com/bucket/doc5.pdf",
-      thumbnail: null,
-    },
-  ]);
+  const [documente, setDocumente] = useState([]);
 
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -158,31 +107,38 @@ const DocumenteIntrare = () => {
     }
   };
 
-  const handleFiles = (files) => {
-    const newFiles = Array.from(files).map((file) => ({
-      name: file.name,
-      size: (file.size / 1024 / 1024).toFixed(2) + " MB",
-      progress: 0,
-      status: "uploading",
+  const refreshList = async () => {
+    const res = await DocumentFilesService.list({ limit: 100 });
+    const mapped = res.files.map(f => ({
+      id: f.id,
+      nume: f.original_name,
+      tip: (f.mime_type || '').split('/')[1]?.toUpperCase() || 'FILE',
+      dimensiune: formatSize(f.size_bytes),
+      data: f.created_at,
+      ora: new Date(f.created_at).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }),
+      furnizor: f.supplier_id ? `Furnizor #${f.supplier_id}` : '—',
+      status: 'procesat',
+      s3Url: f.url,
+      thumbnail: null
     }));
+    setDocumente(mapped);
+  };
 
-    setUploadingFiles(newFiles);
+  useEffect(() => { refreshList(); }, []);
 
-    // Simulate upload progress
-    newFiles.forEach((file, index) => {
-      const interval = setInterval(() => {
-        setUploadingFiles((prev) => {
-          const updated = [...prev];
-          if (updated[index].progress < 100) {
-            updated[index].progress += 10;
-          } else {
-            updated[index].status = "completed";
-            clearInterval(interval);
-          }
-          return updated;
-        });
-      }, 200);
-    });
+  const handleFiles = async (files) => {
+    const list = Array.from(files).map(f => ({ name: f.name, size: formatSize(f.size), progress: 0, status: 'uploading' }));
+    setUploadingFiles(list);
+
+    try {
+      const uploaded = await DocumentFilesService.upload(files, {});
+      // mark completed
+      setUploadingFiles(prev => prev.map(f => ({ ...f, progress: 100, status: 'completed' })));
+      await refreshList();
+    } catch (e) {
+      console.error(e);
+      setUploadingFiles(prev => prev.map(f => ({ ...f, status: 'eroare' })));
+    }
   };
 
   const filteredDocumente = documente.filter((doc) => {
@@ -253,7 +209,7 @@ const DocumenteIntrare = () => {
                 <List className="w-5 h-5" />
               </button>
             </div>
-            <button className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200">
+            <button onClick={refreshList} className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200">
               <RefreshCw className="w-5 h-5 mr-2" />
               Actualizare
             </button>
@@ -406,9 +362,9 @@ const DocumenteIntrare = () => {
                     <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                       <Eye className="w-4 h-4 text-gray-600" />
                     </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <a href={doc.s3Url} target="_blank" rel="noreferrer" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                       <Download className="w-4 h-4 text-gray-600" />
-                    </button>
+                    </a>
                     <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                       <Trash2 className="w-4 h-4 text-gray-600" />
                     </button>
@@ -490,7 +446,7 @@ const DocumenteIntrare = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600 text-gray-900">
+                        <div className="text-sm text-gray-900">
                           {doc.furnizor}
                         </div>
                       </td>
@@ -522,9 +478,9 @@ const DocumenteIntrare = () => {
                           <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                             <Eye className="w-4 h-4 text-gray-600" />
                           </button>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                          <a href={doc.s3Url} target="_blank" rel="noreferrer" className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                             <Download className="w-4 h-4 text-gray-600" />
-                          </button>
+                          </a>
                           <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
                             <Trash2 className="w-4 h-4 text-gray-600" />
                           </button>
@@ -571,7 +527,7 @@ const DocumenteIntrare = () => {
                 onDrop={handleDrop}
               >
                 <CloudUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Trage fișierele aici sau
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
@@ -604,7 +560,7 @@ const DocumenteIntrare = () => {
                           <span className="text-sm font-medium text-gray-900">
                             {file.name}
                           </span>
-                          <span className="ml-2 text-xs text-gray-500 text-gray-500">
+                          <span className="ml-2 text-xs text-gray-500">
                             {file.size}
                           </span>
                         </div>
@@ -634,7 +590,7 @@ const DocumenteIntrare = () => {
               {/* Form Fields */}
               <div className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Furnizor
                   </label>
                   <input
@@ -644,7 +600,7 @@ const DocumenteIntrare = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Categorie
                   </label>
                   <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -656,7 +612,7 @@ const DocumenteIntrare = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 block mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Observații
                   </label>
                   <textarea
