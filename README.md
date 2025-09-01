@@ -3,25 +3,32 @@
 ## 🚀 Setup și Pornire
 
 ### Backend (API Server)
+
 ```bash
 cd app.backend
 npm install
 npm start
 ```
+
 Backend-ul va rula pe `http://localhost:3000`
+ss
 
 ### Frontend (React App)
+
 ```bash
 cd app.frontend
 npm install
 npm run dev
 ```
+
 Frontend-ul va rula pe `http://localhost:5173` sau `http://localhost:5174`
 
 ## 🔧 Configurare
 
 ### Backend (.env)
+
 Fișierul `.env` din `app.backend` este deja configurat pentru dezvoltare:
+
 ```env
 # Database
 DB_HOST=localhost
@@ -42,29 +49,34 @@ NODE_ENV=development
 ```
 
 ### Frontend (.env)
+
 ```env
 VITE_API_URL=http://localhost:3000
 VITE_NODE_ENV=development
 ```
 
 ## 📊 Baza de Date
+
 Backend-ul folosește PostgreSQL și va rula automat migrările la pornire.
 
 ## 🎯 Funcționalități Implementate
 
 ### 🔐 Autentificare Completă
+
 - **Înregistrare utilizatori** cu validare completă
-- **Login securizat** cu JWT tokens  
+- **Login securizat** cu JWT tokens
 - **Activare conturi** prin administrator
 - **Protecție rute** automată
 
 ### 👤 Gestiune Profil Utilizator
+
 - Date personale complete
 - Setări cont (temă, limbă, notificări)
 - Preferințe interfață
 - Configurări securitate
 
 ### 🏢 Gestiune Date Companie
+
 - Informații generale firmă
 - Date financiare și bancare
 - Reprezentant legal
@@ -72,17 +84,20 @@ Backend-ul folosește PostgreSQL și va rula automat migrările la pornire.
 
 ## 🌊 Fluxul de Utilizare
 
-1. **Înregistrare**: 
+1. **Înregistrare**:
+
    - Accesează `http://localhost:5173/register`
    - Completează formularul multi-step
    - Vei fi redirectat la pagina de activare
 
 2. **Activare Cont**:
+
    - Conturile noi trebuie activate de admin
    - Pagina de activare afișează statusul și timpul estimat
    - Contact: support@contiq.ro
 
 3. **Login**:
+
    - Accesează `http://localhost:5173/login`
    - Introduci email și parola
    - Dacă contul este activat → Dashboard
@@ -96,15 +111,18 @@ Backend-ul folosește PostgreSQL și va rula automat migrările la pornire.
 ## 🛠️ API Endpoints
 
 ### Autentificare
+
 - `POST /api/auth/register` - Înregistrare
 - `POST /api/auth/login` - Autentificare
 
 ### Utilizatori (protejate cu JWT)
+
 - `GET /api/profile` - Profil complet
 - `PUT /api/profile/details` - Actualizare date personale
 - `PUT /api/profile/company` - Actualizare date companie
 
 ### Admin
+
 - `GET /api/admin/users` - Lista utilizatori
 - `POST /api/admin/users/:id/activate` - Activare cont
 
@@ -130,13 +148,16 @@ Backend-ul folosește PostgreSQL și va rula automat migrările la pornire.
 ## 🐛 Debugging
 
 ### Backend Logs
+
 Backend-ul loghează automat:
+
 - Pornirea serverului
 - Migrările database
 - Request-urile API
 - Erorile de validare
 
 ### Frontend DevTools
+
 - Network tab pentru API calls
 - Console pentru erori JavaScript
 - React DevTools pentru componente
@@ -144,6 +165,7 @@ Backend-ul loghează automat:
 ## 📞 Contact Support
 
 Dacă întâmpini probleme:
+
 - Email: support@contiq.ro
 - Telefon: +40 312 345 678
 - Chat: Disponibil L-V, 09:00-17:00
