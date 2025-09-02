@@ -21,9 +21,10 @@ import {
   AlertCircle,
   CloudUpload,
   Folder,
+  Edit,
 } from "lucide-react";
 
-import { DocumentFilesService } from "../../../config/api";
+import { DocumentFilesService, SuppliersService, DocumentsService } from "../../../config/api";
 
 const formatSize = (bytes) => {
   if (!bytes && bytes !== 0) return '';
@@ -45,6 +46,22 @@ const DocumenteIntrare = () => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFiles, setUploadingFiles] = useState([]);
+  const [previewDocument, setPreviewDocument] = useState(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [documentToEdit, setDocumentToEdit] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    original_name: '',
+    notes: '',
+    supplier_id: '',
+    document_id: ''
+  });
+  const [availableSuppliers, setAvailableSuppliers] = useState([]);
+  const [availableDocuments, setAvailableDocuments] = useState([]);
+  const [loadingDropdownData, setLoadingDropdownData] = useState(false);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -108,20 +125,27 @@ const DocumenteIntrare = () => {
   };
 
   const refreshList = async () => {
-    const res = await DocumentFilesService.list({ limit: 100 });
-    const mapped = res.files.map(f => ({
-      id: f.id,
-      nume: f.original_name,
-      tip: (f.mime_type || '').split('/')[1]?.toUpperCase() || 'FILE',
-      dimensiune: formatSize(f.size_bytes),
-      data: f.created_at,
-      ora: new Date(f.created_at).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }),
-      furnizor: f.supplier_id ? `Furnizor #${f.supplier_id}` : '—',
-      status: 'procesat',
-      s3Url: f.url,
-      thumbnail: null
-    }));
-    setDocumente(mapped);
+    try {
+      setIsLoading(true);
+      const res = await DocumentFilesService.list({ limit: 100 });
+      const mapped = res.files.map(f => ({
+        id: f.id,
+        nume: f.original_name,
+        tip: (f.mime_type || '').split('/')[1]?.toUpperCase() || 'FILE',
+        dimensiune: formatSize(f.size_bytes),
+        data: f.created_at,
+        ora: new Date(f.created_at).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }),
+        furnizor: f.supplier_id ? `Furnizor #${f.supplier_id}` : '—',
+        status: 'procesat',
+        s3Url: f.url,
+        thumbnail: null
+      }));
+      setDocumente(mapped);
+    } catch (error) {
+      console.error('Error refreshing list:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => { refreshList(); }, []);
@@ -135,9 +159,118 @@ const DocumenteIntrare = () => {
       // mark completed
       setUploadingFiles(prev => prev.map(f => ({ ...f, progress: 100, status: 'completed' })));
       await refreshList();
+      
+      // Show success message and close modal after delay
+      setTimeout(() => {
+        setUploadingFiles([]);
+        setShowUploadModal(false);
+      }, 2000);
     } catch (e) {
       console.error(e);
       setUploadingFiles(prev => prev.map(f => ({ ...f, status: 'eroare' })));
+    }
+  };
+
+  const handlePreview = (document) => {
+    setPreviewDocument(document);
+    setShowPreviewModal(true);
+  };
+
+  const handleDelete = (document) => {
+    setDocumentToDelete(document);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await DocumentFilesService.remove(documentToDelete.id);
+      await refreshList();
+      setShowDeleteModal(false);
+      setDocumentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      alert('Eroare la ștergerea documentului');
+    }
+  };
+
+  const handleDownload = async (document) => {
+    try {
+      const url = await DocumentFilesService.getDownloadUrl(document.id);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = document.nume;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Eroare la descărcarea documentului');
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    const selectedDocs = documente.filter(doc => selectedDocumente.includes(doc.id));
+    for (const doc of selectedDocs) {
+      await handleDownload(doc);
+      // Add small delay to avoid overwhelming the browser
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm(`Ești sigur că vrei să ștergi ${selectedDocumente.length} documente? Această acțiune nu poate fi anulată.`)) {
+      try {
+        const deletePromises = selectedDocumente.map(id => DocumentFilesService.remove(id));
+        await Promise.all(deletePromises);
+        await refreshList();
+        setSelectedDocumente([]);
+      } catch (error) {
+        console.error('Error deleting documents:', error);
+        alert('Eroare la ștergerea documentelor');
+      }
+    }
+  };
+
+  const loadDropdownData = async () => {
+    try {
+      setLoadingDropdownData(true);
+      const [suppliers, documents] = await Promise.all([
+        SuppliersService.getActiveSuppliers(),
+        DocumentsService.getDocuments({ limit: 100 })
+      ]);
+      setAvailableSuppliers(suppliers);
+      setAvailableDocuments(documents.documents || documents);
+    } catch (error) {
+      console.error('Error loading dropdown data:', error);
+    } finally {
+      setLoadingDropdownData(false);
+    }
+  };
+
+  const handleEdit = (document) => {
+    setDocumentToEdit(document);
+    setEditFormData({
+      original_name: document.nume || '',
+      notes: document.notes || '',
+      supplier_id: document.supplier_id || '',
+      document_id: document.document_id || ''
+    });
+    loadDropdownData(); // Load dropdown data when modal opens
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await DocumentFilesService.update(documentToEdit.id, editFormData);
+      await refreshList();
+      setShowEditModal(false);
+      setDocumentToEdit(null);
+      alert('Document editat cu succes!');
+    } catch (error) {
+      console.error('Error updating document:', error);
+      const errorMessage = error.message || 'Eroare la editarea documentului';
+      alert(errorMessage);
     }
   };
 
@@ -209,9 +342,13 @@ const DocumenteIntrare = () => {
                 <List className="w-5 h-5" />
               </button>
             </div>
-            <button onClick={refreshList} className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200">
-              <RefreshCw className="w-5 h-5 mr-2" />
-              Actualizare
+            <button 
+              onClick={refreshList} 
+              disabled={isLoading}
+              className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-5 h-5 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              {isLoading ? 'Se încarcă...' : 'Actualizare'}
             </button>
           </div>
         </div>
@@ -359,17 +496,33 @@ const DocumenteIntrare = () => {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between">
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Eye className="w-4 h-4 text-gray-600" />
+                    <button 
+                      onClick={() => handlePreview(doc)}
+                      className="p-2 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                      title="Prevăzualizează"
+                    >
+                      <Eye className="w-4 h-4" />
                     </button>
-                    <a href={doc.s3Url} target="_blank" rel="noreferrer" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Download className="w-4 h-4 text-gray-600" />
-                    </a>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Trash2 className="w-4 h-4 text-gray-600" />
+                    <button 
+                      onClick={() => handleEdit(doc)}
+                      className="p-2 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
+                      title="Editează"
+                    >
+                      <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                    <button 
+                      onClick={() => handleDownload(doc)}
+                      className="p-2 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                      title="Descarcă"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(doc)}
+                      className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                      title="Șterge"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -475,17 +628,33 @@ const DocumenteIntrare = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Eye className="w-4 h-4 text-gray-600" />
+                          <button 
+                            onClick={() => handlePreview(doc)}
+                            className="p-1 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                            title="Prevăzualizează"
+                          >
+                            <Eye className="w-4 h-4" />
                           </button>
-                          <a href={doc.s3Url} target="_blank" rel="noreferrer" className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Download className="w-4 h-4 text-gray-600" />
-                          </a>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Trash2 className="w-4 h-4 text-gray-600" />
+                          <button 
+                            onClick={() => handleEdit(doc)}
+                            className="p-1 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
+                            title="Editează"
+                          >
+                            <Edit className="w-4 h-4" />
                           </button>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <MoreVertical className="w-4 h-4 text-gray-600" />
+                          <button 
+                            onClick={() => handleDownload(doc)}
+                            className="p-1 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                            title="Descarcă"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(doc)}
+                            className="p-1 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                            title="Șterge"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -645,13 +814,19 @@ const DocumenteIntrare = () => {
           <span className="text-sm text-gray-600">
             {selectedDocumente.length} selectate
           </span>
-          <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          <button 
+            onClick={handleBulkDownload}
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
             Descarcă
           </button>
-          <button className="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
+          <button className="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
             Procesează
           </button>
-          <button className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600">
+          <button 
+            onClick={handleBulkDelete}
+            className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+          >
             Șterge
           </button>
           <button
@@ -660,6 +835,235 @@ const DocumenteIntrare = () => {
           >
             <X className="w-4 h-4 text-gray-600" />
           </button>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {showPreviewModal && previewDocument && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Previzualizare Document
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">{previewDocument.nume}</p>
+              </div>
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+            
+            <div className="flex-1 p-6">
+              {previewDocument.tip === 'PDF' ? (
+                <iframe
+                  src={previewDocument.s3Url}
+                  className="w-full h-full border border-gray-200 rounded-lg"
+                  title="Document Preview"
+                />
+              ) : previewDocument.tip && ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP'].includes(previewDocument.tip.toUpperCase()) ? (
+                <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
+                  <img
+                    src={previewDocument.s3Url}
+                    alt={previewDocument.nume}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
+                  <div className="text-center">
+                    <File className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2">Previzualizarea nu este disponibilă pentru acest tip de fișier</p>
+                    <p className="text-sm text-gray-500">Tip: {previewDocument.tip} • Dimensiune: {previewDocument.dimensiune}</p>
+                    <button
+                      onClick={() => handleDownload(previewDocument)}
+                      className="mt-4 inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Descarcă fișierul
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex items-center justify-between">
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span>Dimensiune: {previewDocument.dimensiune}</span>
+                <span>Data: {previewDocument.data}</span>
+                <span>Ora: {previewDocument.ora}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleDownload(previewDocument)}
+                  className="inline-flex items-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Descarcă
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    handleDelete(previewDocument);
+                  }}
+                  className="inline-flex items-center px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Șterge
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && documentToEdit && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Editează Document
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">{documentToEdit.nume}</p>
+              </div>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nume Document
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.original_name}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, original_name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Nume document"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Furnizor
+                  </label>
+                  <select
+                    value={editFormData.supplier_id}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, supplier_id: e.target.value }))}
+                    disabled={loadingDropdownData}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50"
+                  >
+                    <option value="">{loadingDropdownData ? 'Se încarcă...' : 'Selectează furnizor (opțional)'}</option>
+                    {availableSuppliers.map(supplier => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.nume} - {supplier.cui || 'Fără CUI'}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Selectează pentru a lega de furnizor</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Document
+                  </label>
+                  <select
+                    value={editFormData.document_id}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, document_id: e.target.value }))}
+                    disabled={loadingDropdownData}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:opacity-50"
+                  >
+                    <option value="">{loadingDropdownData ? 'Se încarcă...' : 'Selectează document (opțional)'}</option>
+                    {availableDocuments.map(doc => (
+                      <option key={doc.id} value={doc.id}>
+                        {doc.tip_document?.toUpperCase()} #{doc.numar_document} - {doc.client_nume}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Selectează pentru a lega de document</p>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Observații
+                </label>
+                <textarea
+                  value={editFormData.notes}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  placeholder="Observații despre document..."
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                <p>Tip: {documentToEdit.tip} • Dimensiune: {documentToEdit.dimensiune}</p>
+                <p>Creat: {documentToEdit.data} la {documentToEdit.ora}</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Anulează
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Salvează Modificările
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && documentToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+                Confirmă ștergerea
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                Ești sigur că vrei să ștergi documentul "<strong>{documentToDelete.nume}</strong>"? 
+                Această acțiune nu poate fi anulată.
+              </p>
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Anulează
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Șterge definitiv
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

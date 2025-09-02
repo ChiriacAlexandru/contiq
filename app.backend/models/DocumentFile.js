@@ -74,6 +74,21 @@ class DocumentFile {
 		return row || null;
 	}
 
+	static async update(id, data) {
+		const { original_name, notes, supplier_id, document_id } = data;
+		const [row] = await sql`
+			UPDATE document_files 
+			SET 
+				original_name = ${original_name},
+				notes = ${notes},
+				supplier_id = ${supplier_id},
+				document_id = ${document_id}
+			WHERE id = ${id} 
+			RETURNING *
+		`;
+		return row || null;
+	}
+
 	static async delete(id) {
 		const [row] = await sql`DELETE FROM document_files WHERE id = ${id} RETURNING *`;
 		return row || null;

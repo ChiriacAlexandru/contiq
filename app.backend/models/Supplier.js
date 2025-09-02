@@ -116,7 +116,7 @@ class Supplier {
         rating = ${data.rating ? parseFloat(data.rating) : null},
         observatii = ${data.observatii || null},
         activ = ${data.activ !== undefined ? data.activ : true},
-        updated_at = NOW()
+        updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *
     `;

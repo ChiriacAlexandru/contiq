@@ -530,6 +530,11 @@ export const DocumentFilesService = {
     return resp.data.url;
   },
 
+  update: async (id, data) => {
+    const resp = await ApiClient.put(API_ENDPOINTS.DOCUMENT_FILE_BY_ID(id), data);
+    return resp.data;
+  },
+
   remove: async (id) => {
     const resp = await ApiClient.delete(API_ENDPOINTS.DOCUMENT_FILE_BY_ID(id));
     return resp.data;

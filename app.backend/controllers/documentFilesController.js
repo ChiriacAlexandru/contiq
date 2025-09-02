@@ -77,6 +77,51 @@ class DocumentFilesController {
 		}
 	}
 
+	static async update(req, res) {
+		try {
+			const { id } = req.params;
+			const { original_name, notes, supplier_id, document_id } = req.body;
+			
+			const file = await DocumentFile.getById(id);
+			if (!file) return res.status(404).json({ success: false, error: 'Fișierul nu există' });
+			
+			// Process and validate IDs
+			const processedSupplier = supplier_id && supplier_id.trim() !== '' ? Number(supplier_id) : null;
+			const processedDocument = document_id && document_id.trim() !== '' ? Number(document_id) : null;
+			
+			// Check if IDs are valid numbers when provided
+			if (processedSupplier && isNaN(processedSupplier)) {
+				return res.status(400).json({ success: false, error: 'ID furnizor trebuie să fie un număr valid' });
+			}
+			if (processedDocument && isNaN(processedDocument)) {
+				return res.status(400).json({ success: false, error: 'ID document trebuie să fie un număr valid' });
+			}
+			
+			const updated = await DocumentFile.update(id, {
+				original_name: original_name || file.original_name,
+				notes: notes || null,
+				supplier_id: processedSupplier,
+				document_id: processedDocument
+			});
+			
+			res.json({ success: true, data: updated, message: 'Document actualizat cu succes' });
+		} catch (err) {
+			console.error('Update error:', err);
+			
+			// Handle foreign key constraint errors
+			if (err.code === '23503') {
+				if (err.constraint_name === 'document_files_document_id_fkey') {
+					return res.status(400).json({ success: false, error: 'ID-ul documentului specificat nu există' });
+				}
+				if (err.constraint_name === 'document_files_supplier_id_fkey') {
+					return res.status(400).json({ success: false, error: 'ID-ul furnizorului specificat nu există' });
+				}
+			}
+			
+			res.status(500).json({ success: false, error: 'Eroare la actualizarea documentului' });
+		}
+	}
+
 	static async remove(req, res) {
 		try {
 			const { id } = req.params;

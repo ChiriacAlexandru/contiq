@@ -24,6 +24,9 @@ router.post('/upload', authenticateToken, (req, res, next) => {
 // Get a presigned download URL
 router.get('/:id/download-url', authenticateToken, DocumentFilesController.getDownloadUrl);
 
+// Update a file
+router.put('/:id', authenticateToken, DocumentFilesController.update);
+
 // Delete a file
 router.delete('/:id', authenticateToken, DocumentFilesController.remove);
 
