@@ -114,7 +114,11 @@
       "parameters": {
         "resource": "image",
         "operation": "analyze",
-        "modelId": "gpt-4o-mini",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
         "text": "Transcrie integral textul acestui document contabil (factura, bon fiscal, raport Z, nota de receptie NIR sau extras bancar). Pastreaza numerele, datele, numele firmelor, CUI-urile si sumele exact asa cum apar.",
         "inputType": "base64",
         "binaryPropertyName": "data",
@@ -122,7 +126,7 @@
       },
       "id": "openai-analiza-imagine",
       "name": "Transcrie imagine",
-      "type": "n8n-nodes-base.openAi",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
         740,
