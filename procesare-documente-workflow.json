@@ -1,0 +1,1267 @@
+{
+  "name": "Procesare documente contabile din ZIP",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "proceseaza-documente",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-primesc-zip",
+      "name": "Primesc ZIP",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        0
+      ],
+      "webhookId": "proceseaza-documente"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const item = $input.first();\nconst bin = item.binary && item.binary.data ? item.binary.data : null;\nconst zipName = (bin && bin.fileName) || item.json.fileName || 'necunoscut.zip';\nconst targetCompany = zipName.replace(/\\.zip$/i, '').replace(/[_-]+/g, ' ').trim();\nreturn [{ json: { ...item.json, targetCompany, zip: zipName }, binary: item.binary }];"
+      },
+      "id": "code-config-din-nume-zip",
+      "name": "Config din nume ZIP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "unzip",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "unzip-zip",
+      "name": "Dezarhiveaza ZIP",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        80,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const targetCompany = $('Config din nume ZIP').first().json.targetCompany;\nconst out = [];\nfor (const item of $input.all()) {\n  const binaries = item.binary || {};\n  for (const key of Object.keys(binaries)) {\n    const bin = binaries[key];\n    const fileName = bin.fileName || key;\n    if (/\\.zip$/i.test(fileName)) continue;\n    out.push({ json: { fileName, mimeType: bin.mimeType || '' }, binary: { data: bin } });\n  }\n}\nif (!out.length) throw new Error('ZIP-ul nu contine documente (sau contine doar alte arhive).');\nreturn out;"
+      },
+      "id": "code-documente-ca-iteme",
+      "name": "Documente ca iteme",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-img",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-este-imagine",
+      "name": "Este imagine?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data",
+        "destinationKey": "doc_text",
+        "options": {}
+      },
+      "id": "extract-pdf-text",
+      "name": "Extrage text PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        740,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "text": "Transcrie integral textul acestui document contabil (factura, bon fiscal, raport Z, nota de receptie NIR sau extras bancar). Pastreaza numerele, datele, numele firmelor, CUI-urile si sumele exact asa cum apar.",
+        "inputType": "base64",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "openai-analiza-imagine",
+      "name": "Transcrie imagine",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        740,
+        -100
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const src = $('Documente ca iteme').item.json;\nconst docText = $json.output || $json.text || $json.content || JSON.stringify($json);\nreturn [{ json: { doc_text: docText, fileName: src.fileName, targetCompany: src.targetCompany } }];"
+      },
+      "id": "code-normalizeaza-text-imagine",
+      "name": "Normalizeaza text imagine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 2
+      },
+      "id": "merge-text-unificat",
+      "name": "Text unificat",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analizează documentul atașat și clasifică-l într-una dintre următoarele categorii exacte:\n\n- factura_iesire (unde furnizorul/emitentul este \"{{ $json.targetCompany }}\")\n- factura_intrare (unde cumpărătorul/beneficiarul este \"{{ $json.targetCompany }}\")\n- bon_achizitie (bon fiscal de la furnizori/benzină/magazine)\n- z_emis (raport zilnic Z scos din casa de marcat a firmei \"{{ $json.targetCompany }}\")\n- nir (notă de recepție și constatare de diferențe)\n- extras_bancar (extras de cont al firmei \"{{ $json.targetCompany }}\")\n- altul\n\nNumele fișierului: {{ $json.fileName }}\nConținutul documentului:\n{{ $json.doc_text }}\n\nCompletează obligatoriu și câmpurile: fisier (exact numele fișierului de mai sus) și societate (exact \"{{ $json.targetCompany }}\")."
+      },
+      "id": "chain-clasifica-document",
+      "name": "Clasifica document",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1400,
+        0
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-clasificare",
+      "name": "Model clasificare",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        180
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"categorie\": {\"type\": \"string\", \"enum\": [\"factura_iesire\", \"factura_intrare\", \"bon_achizitie\", \"z_emis\", \"nir\", \"extras_bancar\", \"altul\"]}, \"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}}, \"required\": [\"categorie\", \"fisier\", \"societate\"]}"
+      },
+      "id": "parser-parser-clasificare",
+      "name": "Parser clasificare",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-factura_iesire",
+                    "leftValue": "={{ $json.categorie }}",
+                    "rightValue": "factura_iesire",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "factura_iesire",
+              "renumberOutputs": false
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-factura_intrare",
+                    "leftValue": "={{ $json.categorie }}",
+                    "rightValue": "factura_intrare",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "factura_intrare",
+              "renumberOutputs": false
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-bon_achizitie",
+                    "leftValue": "={{ $json.categorie }}",
+                    "rightValue": "bon_achizitie",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "bon_achizitie",
+              "renumberOutputs": false
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-z_emis",
+                    "leftValue": "={{ $json.categorie }}",
+                    "rightValue": "z_emis",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "z_emis",
+              "renumberOutputs": false
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-nir",
+                    "leftValue": "={{ $json.categorie }}",
+                    "rightValue": "nir",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "nir",
+              "renumberOutputs": false
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-extras_bancar",
+                    "leftValue": "={{ $json.categorie }}",
+                    "rightValue": "extras_bancar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "extras_bancar",
+              "renumberOutputs": false
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "switch-categorie",
+      "name": "Switch categorie",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1640,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrage structurat datele din acest document de tip factură (ieșire sau intrare).\nTextul documentului:\n{{ $('Text unificat').item.json.doc_text }}\n\nContext: societatea țintă este {{ $json.societate }}; categoria documentului este {{ $json.categorie }}.\nExtrage: număr factură, data emiterii, data scadenței, furnizorul (nume, CUI, adresă), cumpărătorul (nume, CUI), moneda, total fără TVA, TVA, total de plată, contul bancar al furnizorului și lista de produse/servicii (denumire, cantitate, preț unitar, valoare).\nCompletează obligatoriu: fisier = \"{{ $json.fisier }}\", societate = \"{{ $json.societate }}\", tip = \"{{ $json.categorie }}\". Dacă o valoare nu există în document, folosește null."
+      },
+      "id": "chain-extrage-factura-iesire",
+      "name": "Extrage factura iesire",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1960,
+        -520
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-factura-iesire",
+      "name": "Model factura iesire",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        -340
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}, \"tip\": {\"type\": \"string\"}, \"date_document\": {\"type\": \"object\", \"properties\": {\"numar_factura\": {\"type\": [\"string\", \"null\"]}, \"data_emitere\": {\"type\": [\"string\", \"null\"]}, \"data_scadenta\": {\"type\": [\"string\", \"null\"]}, \"furnizor\": {\"type\": \"object\", \"properties\": {\"nume\": {\"type\": [\"string\", \"null\"]}, \"cui\": {\"type\": [\"string\", \"null\"]}, \"adresa\": {\"type\": [\"string\", \"null\"]}}}, \"cumparator\": {\"type\": \"object\", \"properties\": {\"nume\": {\"type\": [\"string\", \"null\"]}, \"cui\": {\"type\": [\"string\", \"null\"]}, \"adresa\": {\"type\": [\"string\", \"null\"]}}}, \"moneda\": {\"type\": [\"string\", \"null\"]}, \"total_fara_tva\": {\"type\": [\"number\", \"null\"]}, \"tva\": {\"type\": [\"number\", \"null\"]}, \"total\": {\"type\": [\"number\", \"null\"]}, \"cont_bancar\": {\"type\": [\"string\", \"null\"]}, \"produse\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"denumire\": {\"type\": \"string\"}, \"cantitate\": {\"type\": [\"number\", \"null\"]}, \"pret_unitar\": {\"type\": [\"number\", \"null\"]}, \"valoare\": {\"type\": [\"number\", \"null\"]}}}}}, \"required\": [\"numar_factura\", \"data_emitere\", \"furnizor\", \"cumparator\", \"moneda\", \"total\"]}}, \"required\": [\"fisier\", \"societate\", \"tip\", \"date_document\"]}"
+      },
+      "id": "parser-parser-factura-iesire",
+      "name": "Parser factura iesire",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrage structurat datele din acest document de tip factură (ieșire sau intrare).\nTextul documentului:\n{{ $('Text unificat').item.json.doc_text }}\n\nContext: societatea țintă este {{ $json.societate }}; categoria documentului este {{ $json.categorie }}.\nExtrage: număr factură, data emiterii, data scadenței, furnizorul (nume, CUI, adresă), cumpărătorul (nume, CUI), moneda, total fără TVA, TVA, total de plată, contul bancar al furnizorului și lista de produse/servicii (denumire, cantitate, preț unitar, valoare).\nCompletează obligatoriu: fisier = \"{{ $json.fisier }}\", societate = \"{{ $json.societate }}\", tip = \"{{ $json.categorie }}\". Dacă o valoare nu există în document, folosește null."
+      },
+      "id": "chain-extrage-factura-intrare",
+      "name": "Extrage factura intrare",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1960,
+        -300
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-factura-intrare",
+      "name": "Model factura intrare",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        -120
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}, \"tip\": {\"type\": \"string\"}, \"date_document\": {\"type\": \"object\", \"properties\": {\"numar_factura\": {\"type\": [\"string\", \"null\"]}, \"data_emitere\": {\"type\": [\"string\", \"null\"]}, \"data_scadenta\": {\"type\": [\"string\", \"null\"]}, \"furnizor\": {\"type\": \"object\", \"properties\": {\"nume\": {\"type\": [\"string\", \"null\"]}, \"cui\": {\"type\": [\"string\", \"null\"]}, \"adresa\": {\"type\": [\"string\", \"null\"]}}}, \"cumparator\": {\"type\": \"object\", \"properties\": {\"nume\": {\"type\": [\"string\", \"null\"]}, \"cui\": {\"type\": [\"string\", \"null\"]}, \"adresa\": {\"type\": [\"string\", \"null\"]}}}, \"moneda\": {\"type\": [\"string\", \"null\"]}, \"total_fara_tva\": {\"type\": [\"number\", \"null\"]}, \"tva\": {\"type\": [\"number\", \"null\"]}, \"total\": {\"type\": [\"number\", \"null\"]}, \"cont_bancar\": {\"type\": [\"string\", \"null\"]}, \"produse\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"denumire\": {\"type\": \"string\"}, \"cantitate\": {\"type\": [\"number\", \"null\"]}, \"pret_unitar\": {\"type\": [\"number\", \"null\"]}, \"valoare\": {\"type\": [\"number\", \"null\"]}}}}}, \"required\": [\"numar_factura\", \"data_emitere\", \"furnizor\", \"cumparator\", \"moneda\", \"total\"]}}, \"required\": [\"fisier\", \"societate\", \"tip\", \"date_document\"]}"
+      },
+      "id": "parser-parser-factura-intrare",
+      "name": "Parser factura intrare",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrage structurat datele din acest document de tip bon fiscal (bon_achizitie).\nTextul documentului:\n{{ $('Text unificat').item.json.doc_text }}\n\nContext: societatea țintă este {{ $json.societate }}; categoria documentului este {{ $json.categorie }}.\nExtrage: numele magazinului/pompelor/statiei, CUI-ul, data și ora, moneda, produsele achiziționate (denumire, cantitate, preț) și totalul bonului.\nCompletează obligatoriu: fisier = \"{{ $json.fisier }}\", societate = \"{{ $json.societate }}\", tip = \"{{ $json.categorie }}\". Dacă o valoare nu există în document, folosește null."
+      },
+      "id": "chain-extrage-bon",
+      "name": "Extrage bon",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1960,
+        -80
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-bon",
+      "name": "Model bon",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        100
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}, \"tip\": {\"type\": \"string\"}, \"date_document\": {\"type\": \"object\", \"properties\": {\"nume_magazin\": {\"type\": [\"string\", \"null\"]}, \"cui\": {\"type\": [\"string\", \"null\"]}, \"data\": {\"type\": [\"string\", \"null\"]}, \"ora\": {\"type\": [\"string\", \"null\"]}, \"moneda\": {\"type\": [\"string\", \"null\"]}, \"total\": {\"type\": [\"number\", \"null\"]}, \"produse\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"denumire\": {\"type\": \"string\"}, \"cantitate\": {\"type\": [\"number\", \"null\"]}, \"pret_unitar\": {\"type\": [\"number\", \"null\"]}, \"valoare\": {\"type\": [\"number\", \"null\"]}}}}}, \"required\": [\"nume_magazin\", \"data\", \"total\"]}}, \"required\": [\"fisier\", \"societate\", \"tip\", \"date_document\"]}"
+      },
+      "id": "parser-parser-bon",
+      "name": "Parser bon",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrage structurat datele din acest document de tip raport Z (z_emis).\nTextul documentului:\n{{ $('Text unificat').item.json.doc_text }}\n\nContext: societatea țintă este {{ $json.societate }}; categoria documentului este {{ $json.categorie }}.\nExtrage: data raportului, numărul raportului Z, seria/numărul casei de marcat, vânzările totale, TVA-ul total, încasările în numerar, încasările cu cardul și moneda.\nCompletează obligatoriu: fisier = \"{{ $json.fisier }}\", societate = \"{{ $json.societate }}\", tip = \"{{ $json.categorie }}\". Dacă o valoare nu există în document, folosește null."
+      },
+      "id": "chain-extrage-raport-z",
+      "name": "Extrage raport Z",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1960,
+        140
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-raport-z",
+      "name": "Model raport Z",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        320
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}, \"tip\": {\"type\": \"string\"}, \"date_document\": {\"type\": \"object\", \"properties\": {\"data\": {\"type\": [\"string\", \"null\"]}, \"numar_raport\": {\"type\": [\"string\", \"null\"]}, \"seria_casa\": {\"type\": [\"string\", \"null\"]}, \"vanzari_totale\": {\"type\": [\"number\", \"null\"]}, \"tva\": {\"type\": [\"number\", \"null\"]}, \"numerar\": {\"type\": [\"number\", \"null\"]}, \"card\": {\"type\": [\"number\", \"null\"]}, \"moneda\": {\"type\": [\"string\", \"null\"]}}, \"required\": [\"data\", \"vanzari_totale\"]}}, \"required\": [\"fisier\", \"societate\", \"tip\", \"date_document\"]}"
+      },
+      "id": "parser-parser-raport-z",
+      "name": "Parser raport Z",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrage structurat datele din acest document de tip notă de recepție și constatare de diferențe (nir).\nTextul documentului:\n{{ $('Text unificat').item.json.doc_text }}\n\nContext: societatea țintă este {{ $json.societate }}; categoria documentului este {{ $json.categorie }}.\nExtrage: numărul NIR, data, furnizorul, numărul facturii furnizorului, gestiunea, pozițiile recepționate (denumire, cantitate, preț unitar, valoare), totalul și eventualele diferențe constatate.\nCompletează obligatoriu: fisier = \"{{ $json.fisier }}\", societate = \"{{ $json.societate }}\", tip = \"{{ $json.categorie }}\". Dacă o valoare nu există în document, folosește null."
+      },
+      "id": "chain-extrage-nir",
+      "name": "Extrage NIR",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1960,
+        360
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-nir",
+      "name": "Model NIR",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        540
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}, \"tip\": {\"type\": \"string\"}, \"date_document\": {\"type\": \"object\", \"properties\": {\"numar_nir\": {\"type\": [\"string\", \"null\"]}, \"data\": {\"type\": [\"string\", \"null\"]}, \"furnizor\": {\"type\": [\"string\", \"null\"]}, \"numar_factura_furnizor\": {\"type\": [\"string\", \"null\"]}, \"gestiune\": {\"type\": [\"string\", \"null\"]}, \"produse\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"denumire\": {\"type\": \"string\"}, \"cantitate\": {\"type\": [\"number\", \"null\"]}, \"pret_unitar\": {\"type\": [\"number\", \"null\"]}, \"valoare\": {\"type\": [\"number\", \"null\"]}}}}, \"total\": {\"type\": [\"number\", \"null\"]}, \"diferente_constatate\": {\"type\": [\"string\", \"null\"]}}, \"required\": [\"numar_nir\", \"data\", \"furnizor\"]}}, \"required\": [\"fisier\", \"societate\", \"tip\", \"date_document\"]}"
+      },
+      "id": "parser-parser-nir",
+      "name": "Parser NIR",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrage structurat datele din acest document de tip extras de cont bancar (extras_bancar).\nTextul documentului:\n{{ $('Text unificat').item.json.doc_text }}\n\nContext: societatea țintă este {{ $json.societate }}; categoria documentului este {{ $json.categorie }}.\nExtrage: banca, IBAN-ul, moneda, perioada (început și sfârșit), soldul inițial, soldul final și TOATE tranzacțiile ca listă, fiecare cu: data, descrierea, contraparte (numele entității cu care s-a tranzacționat, dacă se poate identifica), suma (număr pozitiv), tip (debit sau credit) și moneda. Nu sări nicio tranzacție.\nCompletează obligatoriu: fisier = \"{{ $json.fisier }}\", societate = \"{{ $json.societate }}\", tip = \"{{ $json.categorie }}\". Dacă o valoare nu există în document, folosește null."
+      },
+      "id": "chain-extrage-extras-bancar",
+      "name": "Extrage extras bancar",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1960,
+        580
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl__": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "model-model-extras-bancar",
+      "name": "Model extras bancar",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        760
+      ],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\": \"object\", \"properties\": {\"fisier\": {\"type\": \"string\"}, \"societate\": {\"type\": \"string\"}, \"tip\": {\"type\": \"string\"}, \"date_document\": {\"type\": \"object\", \"properties\": {\"banca\": {\"type\": [\"string\", \"null\"]}, \"iban\": {\"type\": [\"string\", \"null\"]}, \"moneda\": {\"type\": [\"string\", \"null\"]}, \"perioada_start\": {\"type\": [\"string\", \"null\"]}, \"perioada_final\": {\"type\": [\"string\", \"null\"]}, \"sold_initial\": {\"type\": [\"number\", \"null\"]}, \"sold_final\": {\"type\": [\"number\", \"null\"]}, \"tranzactii\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"data\": {\"type\": [\"string\", \"null\"]}, \"descriere\": {\"type\": [\"string\", \"null\"]}, \"contraparte\": {\"type\": [\"string\", \"null\"]}, \"suma\": {\"type\": [\"number\", \"null\"]}, \"tip\": {\"type\": [\"string\", \"null\"]}, \"moneda\": {\"type\": [\"string\", \"null\"]}}, \"required\": [\"data\", \"suma\", \"tip\"]}}}, \"required\": [\"iban\", \"perioada_start\", \"perioada_final\", \"sold_initial\", \"sold_final\", \"tranzactii\"]}}, \"required\": [\"fisier\", \"societate\", \"tip\", \"date_document\"]}"
+      },
+      "id": "parser-parser-extras-bancar",
+      "name": "Parser extras bancar",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "categorie",
+              "type": "string",
+              "value": "={{ $json.categorie || 'altul' }}"
+            },
+            {
+              "id": "a2",
+              "name": "fisier",
+              "type": "string",
+              "value": "={{ $json.fisier }}"
+            },
+            {
+              "id": "a3",
+              "name": "societate",
+              "type": "string",
+              "value": "={{ $json.societate }}"
+            },
+            {
+              "id": "a4",
+              "name": "date_document",
+              "type": "object",
+              "value": "={{ { } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-altul",
+      "name": "Marcaj altul",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1960,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 7
+      },
+      "id": "merge-date-extrase",
+      "name": "Date extrase",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst target = (items.map(i => i.json.societate).find(s => s) ||\n  $('Documente ca iteme').first().json.targetCompany || 'NECUNOSCUT');\n\nfunction norm(s) {\n  return (s || '').toString().toUpperCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^A-Z0-9 ]+/g, ' ')\n    .replace(/\\b(S C|S R L|SRL|SC|SA|S A|PFA|SOCIETATE|COMPANIE|FIRMA)\\b/g, ' ')\n    .replace(/\\s+/g, ' ').trim();\n}\nfunction lev(a, b) {\n  const m = a.length, n = b.length;\n  const d = Array.from({ length: m + 1 }, (_, i) => { const row = new Array(n + 1).fill(0); row[0] = i; return row; });\n  for (let j = 1; j <= n; j++) d[0][j] = j;\n  for (let i = 1; i <= m; i++) {\n    for (let j = 1; j <= n; j++) {\n      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));\n    }\n  }\n  return d[m][n];\n}\nfunction sim(a, b) {\n  const x = norm(a), y = norm(b);\n  if (!x || !y) return 0;\n  return 1 - lev(x, y) / Math.max(x.length, y.length);\n}\nfunction tokenScore(a, b) {\n  const A = new Set(norm(a).split(' ').filter(t => t.length > 0));\n  const B = new Set(norm(b).split(' ').filter(t => t.length > 0));\n  if (!A.size || !B.size) return 0;\n  let inter = 0;\n  for (const t of A) if (B.has(t)) inter++;\n  return inter / Math.max(A.size, B.size);\n}\nfunction nameSim(a, b) { return Math.max(sim(a, b), tokenScore(a, b)); }\n\nconst tranzactii = [];\nfor (const it of items) {\n  const j = it.json;\n  if ((j.categorie || j.tip) === 'extras_bancar' && j.date_document && Array.isArray(j.date_document.tranzactii)) {\n    for (const tr of j.date_document.tranzactii) {\n      tranzactii.push({ ...tr, extras: j.fisier });\n    }\n  }\n}\n\nfunction gasesteTranzactie(nume, sumaDoc, tipDorit) {\n  let best = null;\n  for (const tr of tranzactii) {\n    if (tipDorit && tr.tip && norm(tr.tip) !== tipDorit) continue;\n    const s = nameSim(tr.contraparte || tr.descriere || '', nume);\n    const suma = Math.abs(Number(tr.suma) || 0);\n    const total = Math.abs(Number(sumaDoc) || 0);\n    const sumaOk = total > 0 && suma > 0 && Math.abs(suma - total) <= Math.max(1, total * 0.01);\n    const score = s + (sumaOk ? 1 : 0);\n    if (!best || score > best.score) best = { tr, s, sumaOk, score };\n  }\n  if (best && best.s >= 0.7 && (best.sumaOk || best.s >= 0.9)) {\n    return { in_extras: true, tranzactie_potrivita: {\n      data: best.tr.data || null,\n      contraparte: best.tr.contraparte || best.tr.descriere || null,\n      suma: best.tr.suma === undefined ? null : best.tr.suma,\n      tip: best.tr.tip || null,\n      extras: best.tr.extras || null,\n      scor_nume: Number(best.s.toFixed(2)),\n      suma_corecta: best.sumaOk\n    } };\n  }\n  return { in_extras: false, tranzactie_potrivita: null };\n}\n\nreturn items.map(it => {\n  const j = it.json;\n  const categorie = j.categorie || j.tip || 'necunoscut';\n  const v = { observatii: [] };\n  const dd = j.date_document || {};\n  if (categorie === 'factura_iesire') {\n    const furn = (dd.furnizor && dd.furnizor.nume) || '';\n    const client = (dd.cumparator && dd.cumparator.nume) || '';\n    v.emitent_confirmat = nameSim(furn, target) >= 0.7;\n    if (!v.emitent_confirmat) v.observatii.push('Emitentul \"' + furn + '\" nu corespunde societatii din numele ZIP-ului \"' + target + '\"');\n    Object.assign(v, gasesteTranzactie(client, dd.total, 'CREDIT'));\n    if (!v.in_extras && client) v.observatii.push('Nu am gasit in extrasul bancar o incasare (credit) de la clientul \"' + client + '\" cu suma facturii');\n    v.stare = (v.emitent_confirmat && v.in_extras) ? 'validat' : 'de_verificat';\n  } else if (categorie === 'factura_intrare') {\n    const furn = (dd.furnizor && dd.furnizor.nume) || '';\n    const cump = (dd.cumparator && dd.cumparator.nume) || '';\n    v.beneficiar_confirmat = nameSim(cump, target) >= 0.7;\n    if (!v.beneficiar_confirmat) v.observatii.push('Cumparatorul \"' + cump + '\" nu corespunde societatii \"' + target + '\"');\n    Object.assign(v, gasesteTranzactie(furn, dd.total, 'DEBIT'));\n    if (!v.in_extras && furn) v.observatii.push('Nu am gasit in extrasul bancar o plata (debit) catre furnizorul \"' + furn + '\" cu suma facturii');\n    v.stare = (v.beneficiar_confirmat && v.in_extras) ? 'validat' : 'de_verificat';\n  } else if (categorie === 'extras_bancar') {\n    v.stare = 'procesat';\n    v.numar_tranzactii = Array.isArray(dd.tranzactii) ? dd.tranzactii.length : 0;\n  } else if (categorie === 'altul') {\n    v.stare = 'ignorat';\n  } else {\n    v.stare = 'procesat';\n  }\n  return { json: { ...j, categorie, validare: v } };\n});"
+      },
+      "id": "code-validare-vs-extras-bancar",
+      "name": "Validare vs extras bancar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst docs = items.map(i => i.json);\nconst target = docs.map(d => d.societate).find(s => s) ||\n  $('Documente ca iteme').first().json.targetCompany || 'NECUNOSCUT';\n\nconst distributie = {};\nfor (const d of docs) distributie[d.categorie] = (distributie[d.categorie] || 0) + 1;\nconst validat = docs.filter(d => d.validare && d.validare.stare === 'validat').length;\nconst deVerificat = docs.filter(d => d.validare && d.validare.stare === 'de_verificat').length;\n\nfunction csvCell(v) {\n  if (v === null || v === undefined) return '';\n  let s = (typeof v === 'object') ? JSON.stringify(v) : String(v);\n  if (/[\",;\\n]/.test(s)) s = '\"' + s.replace(/\"/g, '\"\"') + '\"';\n  return s;\n}\nfunction parte(dd, cheie) { return dd && dd[cheie] && dd[cheie].nume ? dd[cheie].nume : ''; }\n\nconst header = ['fisier', 'categorie', 'emitent_furnizor', 'cumparator_beneficiar', 'numar_document', 'data', 'total', 'moneda', 'stare', 'in_extras_bancar', 'observatii'];\nconst rows = docs.map(d => {\n  const dd = d.date_document || {};\n  const val = d.validare || {};\n  return [\n    d.fisier,\n    d.categorie,\n    parte(dd, 'furnizor'),\n    parte(dd, 'cumparator') || dd.nume_magazin || '',\n    dd.numar_factura || dd.numar_nir || dd.numar_raport || '',\n    dd.data_emitere || dd.data || '',\n    (dd.total === undefined || dd.total === null) ? (dd.vanzari_totale === undefined ? '' : dd.vanzari_totale) : dd.total,\n    dd.moneda || '',\n    val.stare || '',\n    val.in_extras ? 'da' : 'nu',\n    (val.observatii || []).join(' | ')\n  ].map(csvCell).join(',');\n});\nconst csv = [header.join(','), ...rows].join('\\n');\nconst slug = target.toString().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'raport';\n\nreturn [{ json: {\n  raport: {\n    societate: target,\n    total_documente: docs.length,\n    distributie,\n    facturi_validate_in_extras: validat,\n    documente_de_verificat: deVerificat,\n    documente: docs\n  },\n  csv_nume: 'raport_' + slug + '.csv',\n  csv_base64: Buffer.from(csv, 'utf8').toString('base64')\n} }];"
+      },
+      "id": "code-raport-final",
+      "name": "Raport final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-raport",
+      "name": "Raspunde cu raport",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2980,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Procesare documente contabile din ZIP\n\n**Input:** POST multipart/form-data pe webhook-ul `proceseaza-documente`, câmpul fișier `data` = un ZIP.\nNumele ZIP-ului = numele societății emitente (compania țintă).\n\n**Flux:** dezarhivare → clasificare AI (factura_iesire / factura_intrare / bon_achizitie / z_emis / nir / extras_bancar / altul) → extragere date per tip → validare facturi vs. tranzacții din extrasul bancar → raport JSON + CSV (base64) în răspunsul webhook-ului.\n\n**Config necesar:** alege credențialele OpenAI la toate nodurile Model/Analyze. Dacă folosești alt provider, înlocuiește nodurile OpenAI Chat Model.",
+        "height": 340,
+        "width": 460
+      },
+      "id": "sticky-instructiuni",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        -560
+      ]
+    }
+  ],
+  "connections": {
+    "Primesc ZIP": {
+      "main": [
+        [
+          {
+            "node": "Config din nume ZIP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config din nume ZIP": {
+      "main": [
+        [
+          {
+            "node": "Dezarhiveaza ZIP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dezarhiveaza ZIP": {
+      "main": [
+        [
+          {
+            "node": "Documente ca iteme",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documente ca iteme": {
+      "main": [
+        [
+          {
+            "node": "Este imagine?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Este imagine?": {
+      "main": [
+        [
+          {
+            "node": "Transcrie imagine",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extrage text PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage text PDF": {
+      "main": [
+        [
+          {
+            "node": "Text unificat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcrie imagine": {
+      "main": [
+        [
+          {
+            "node": "Normalizeaza text imagine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizeaza text imagine": {
+      "main": [
+        [
+          {
+            "node": "Text unificat",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Text unificat": {
+      "main": [
+        [
+          {
+            "node": "Clasifica document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model clasificare": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasifica document",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser clasificare": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Clasifica document",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasifica document": {
+      "main": [
+        [
+          {
+            "node": "Switch categorie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch categorie": {
+      "main": [
+        {
+          "node": "Extrage factura iesire",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Extrage factura intrare",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Extrage bon",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Extrage raport Z",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Extrage NIR",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Extrage extras bancar",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Marcaj altul",
+          "type": "main",
+          "index": 0
+        }
+      ]
+    },
+    "Model factura iesire": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrage factura iesire",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser factura iesire": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrage factura iesire",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage factura iesire": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model factura intrare": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrage factura intrare",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser factura intrare": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrage factura intrare",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage factura intrare": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Model bon": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrage bon",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser bon": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrage bon",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage bon": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Model raport Z": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrage raport Z",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser raport Z": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrage raport Z",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage raport Z": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Model NIR": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrage NIR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser NIR": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrage NIR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage NIR": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Model extras bancar": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrage extras bancar",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser extras bancar": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrage extras bancar",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrage extras bancar": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Marcaj altul": {
+      "main": [
+        [
+          {
+            "node": "Date extrase",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Date extrase": {
+      "main": [
+        [
+          {
+            "node": "Validare vs extras bancar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validare vs extras bancar": {
+      "main": [
+        [
+          {
+            "node": "Raport final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Raport final": {
+      "main": [
+        [
+          {
+            "node": "Raspunde cu raport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "vibe-generated"
+  }
+}
